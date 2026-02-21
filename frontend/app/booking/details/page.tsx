@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, Suspense } from 'react';
 import { useBooking } from '@/context/BookingContext';
 import {
     Star,
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function BookingDetails() {
+function BookingDetailsContent() {
     const searchParams = useSearchParams();
     const roomId = searchParams.get('room');
     const router = useRouter();
@@ -412,5 +412,17 @@ export default function BookingDetails() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function BookingDetails() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen bg-white">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+            </div>
+        }>
+            <BookingDetailsContent />
+        </Suspense>
     );
 }
