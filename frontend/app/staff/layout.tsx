@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import StaffSidebar from '@/components/StaffSidebar';
 import { useAuth } from '@/context/AuthContext';
-import { Bell, User as UserIcon, Search, TrendingUp, ShoppingCart } from 'lucide-react';
+import { Bell, User as UserIcon, Search, TrendingUp, ShoppingCart, Menu } from 'lucide-react';
 import Link from 'next/link';
 
 export default function StaffLayout({
@@ -20,6 +20,7 @@ export default function StaffLayout({
     const [searchResults, setSearchResults] = useState<any>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Debounced Search Logic
     useEffect(() => {
@@ -50,14 +51,30 @@ export default function StaffLayout({
     }, [searchQuery]);
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <StaffSidebar />
+        <div className="flex min-h-screen bg-gray-50 relative">
+            {/* Mobile Sidebar Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-[55] lg:hidden backdrop-blur-sm"
+                    onClick={() => setSidebarOpen(false)}
+                ></div>
+            )}
+
+            <StaffSidebar isMobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             <main className="flex-1 flex flex-col">
                 {/* Top Header */}
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-50">
+                <header className="h-20 lg:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-50">
+                    {/* Mobile Sidebar Toggle */}
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="p-2 mr-2 text-gray-500 hover:bg-gray-100 rounded-xl lg:hidden"
+                    >
+                        <Menu size={24} />
+                    </button>
+
                     <div className="flex items-center gap-4 text-gray-400 flex-1 max-w-xl relative">
-                        <Search size={18} />
+                        <Search size={18} className="hidden sm:block" />
                         <input
                             type="text"
                             placeholder="Search for rooms, orders, or guests..."
@@ -146,8 +163,8 @@ export default function StaffLayout({
                             )}
                         </div>
 
-                        <div className="flex items-center gap-3 pl-6 border-l border-gray-100">
-                            <div className="text-right">
+                        <div className="flex items-center gap-3 pl-4 lg:pl-6 border-l border-gray-100">
+                            <div className="text-right hidden sm:block">
                                 <div className="text-sm font-bold text-gray-900">{user ? `${user.first_name} ${user.last_name}` : 'Staff Member'}</div>
                                 <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest leading-none">{user?.role || 'Guest'}</div>
                             </div>
@@ -159,7 +176,7 @@ export default function StaffLayout({
                 </header>
 
                 {/* Content Area */}
-                <div className="p-8">
+                <div className="p-4 lg:p-8">
                     {children}
                 </div>
             </main>

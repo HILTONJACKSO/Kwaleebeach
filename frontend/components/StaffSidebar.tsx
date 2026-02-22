@@ -13,6 +13,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Users,
+    X,
     Beer,
     Waves,
     Umbrella,
@@ -27,7 +28,12 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 
-export default function StaffSidebar() {
+interface StaffSidebarProps {
+    isMobileOpen?: boolean;
+    onClose?: () => void;
+}
+
+export default function StaffSidebar({ isMobileOpen, onClose }: StaffSidebarProps) {
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { user, logout } = useAuth();
@@ -59,8 +65,8 @@ export default function StaffSidebar() {
 
     return (
         <aside
-            className={`bg-gray-900 text-white transition-all duration-300 flex flex-col h-screen sticky top-0 ${isCollapsed ? 'w-20' : 'w-64'
-                }`}
+            className={`bg-gray-900 text-white transition-all duration-300 flex flex-col h-screen fixed inset-y-0 left-0 z-[60] lg:sticky lg:top-0 ${isCollapsed ? 'lg:w-20' : 'lg:w-64'
+                } ${isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'}`}
         >
             {/* Logo Section */}
             <div className="p-6 flex items-center justify-between border-b border-gray-800">
@@ -70,10 +76,10 @@ export default function StaffSidebar() {
                     </span>
                 )}
                 <button
-                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    onClick={() => isMobileOpen && onClose ? onClose() : setIsCollapsed(!isCollapsed)}
                     className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
                 >
-                    {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                    {isMobileOpen ? <X size={18} /> : (isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />)}
                 </button>
             </div>
 
@@ -85,6 +91,7 @@ export default function StaffSidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
+                            onClick={() => onClose?.()}
                             className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${isActive
                                 ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-orange-900/20'
                                 : 'text-gray-400 hover:bg-gray-800 hover:text-white'
@@ -93,7 +100,7 @@ export default function StaffSidebar() {
                             <span className={`${isActive ? 'scale-110' : 'group-hover:scale-110'} transition-transform`}>
                                 {item.icon}
                             </span>
-                            {!isCollapsed && (
+                            {(!isCollapsed || isMobileOpen) && (
                                 <span className="text-sm font-bold tracking-tight">{item.name}</span>
                             )}
                         </Link>

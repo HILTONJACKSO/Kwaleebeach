@@ -68,17 +68,17 @@ export default function RoomGrid() {
     return (
         <div className="space-y-8 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Room Inventory (PMS)</h1>
-                    <p className="text-gray-500 font-medium tracking-tight">Monitor and manage room statuses in real-time.</p>
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Room Inventory (PMS)</h1>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Monitor and manage room statuses in real-time.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Link
                         href="/staff/rooms/add"
-                        className="bg-gray-900 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-[var(--color-primary)] transition-all shadow-lg shadow-gray-200"
+                        className="flex-1 sm:flex-none justify-center bg-gray-900 text-white px-6 py-3 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 hover:bg-[var(--color-primary)] transition-all shadow-lg shadow-gray-200"
                     >
-                        <Plus size={18} /> Register Room
+                        <Plus size={18} /> <span className="hidden xs:inline">Register Room</span><span className="xs:hidden">Add</span>
                     </Link>
                     <button onClick={fetchRooms} className="p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all shadow-sm">
                         <RefreshCcw size={18} className="text-gray-400" />

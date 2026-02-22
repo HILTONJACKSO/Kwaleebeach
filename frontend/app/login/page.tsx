@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useUI } from '@/context/UIContext';
-import { Mail, Lock, LogIn, ShieldCheck, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Mail, Lock, LogIn, ShieldCheck, ArrowRight, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { showNotification } = useUI();
@@ -87,14 +88,23 @@ export default function LoginPage() {
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Secure Password</label>
-                            <input
-                                required
-                                type="password"
-                                placeholder="••••••••"
-                                className="w-full px-6 py-5 bg-white border-2 border-gray-300 rounded-2xl focus:ring-2 focus:ring-[var(--color-primary)] text-sm font-bold text-black transition-all"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
+                            <div className="relative">
+                                <input
+                                    required
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className="w-full px-6 py-5 bg-white border-2 border-gray-300 rounded-2xl focus:ring-2 focus:ring-[var(--color-primary)] text-sm font-bold text-black transition-all pr-14"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between pt-2">
