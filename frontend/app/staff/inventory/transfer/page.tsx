@@ -30,7 +30,7 @@ export default function TransferInventoryPage() {
     });
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/api/inventory/items/', {
+        fetch('/api/inventory/items/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -48,7 +48,7 @@ export default function TransferInventoryPage() {
         }
         setLoading(true);
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/transfers/', {
+            const res = await fetch('/api/inventory/transfers/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

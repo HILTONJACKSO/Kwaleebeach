@@ -49,7 +49,7 @@ export default function AddRoomPage() {
         }
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/pms/rooms/', {
+            const res = await fetch('/api/pms/rooms/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

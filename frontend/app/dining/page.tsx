@@ -51,8 +51,8 @@ export default function MenuPage() {
         const fetchData = async () => {
             try {
                 const [catRes, itemRes] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/api/inventory/menu/categories/'),
-                    fetch('http://127.0.0.1:8000/api/inventory/menu/items/')
+                    fetch('/api/inventory/menu/categories/'),
+                    fetch('/api/inventory/menu/items/')
                 ]);
 
                 const cats = catRes.ok ? await catRes.json() : [];
@@ -75,7 +75,7 @@ export default function MenuPage() {
 
         const fetchOrders = async () => {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/inventory/orders/active/?room=${roomNumber}&location_type=${locationType}`);
+                const res = await fetch(`/api/inventory/orders/active/?room=${roomNumber}&location_type=${locationType}`);
                 if (res.ok) {
                     const data = await res.json();
                     setActiveOrders(data);
@@ -116,7 +116,7 @@ export default function MenuPage() {
         };
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/orders/', {
+            const res = await fetch('/api/inventory/orders/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
@@ -127,7 +127,7 @@ export default function MenuPage() {
                 clearCart();
                 showModal("Order Success", "Your order has been placed successfully! You can track it in the active orders section.");
                 // Trigger immediate refresh of orders
-                const ordersRes = await fetch(`http://127.0.0.1:8000/api/inventory/orders/active/?room=${roomNumber}`);
+                const ordersRes = await fetch(`/api/inventory/orders/active/?room=${roomNumber}`);
                 if (ordersRes.ok) setActiveOrders(await ordersRes.json());
             } else {
                 showModal("Order Failed", "We couldn't process your order. Please try again or contact the front desk.");

@@ -36,7 +36,7 @@ export default function AddMenuItemPage() {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/menu/categories/', {
+            const res = await fetch('/api/inventory/menu/categories/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -79,7 +79,7 @@ export default function AddMenuItemPage() {
         }
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/menu/items/', {
+            const res = await fetch('/api/inventory/menu/items/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

@@ -43,7 +43,7 @@ function CMSContent() {
 
     const fetchConfigs = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/website/config/', {
+            const res = await fetch('/api/website/config/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -73,7 +73,7 @@ function CMSContent() {
         try {
             const token = localStorage.getItem('token');
             const promises = configs.map(config =>
-                fetch(`http://127.0.0.1:8000/api/website/config/${config.key}/`, {
+                fetch(`/api/website/config/${config.key}/`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',

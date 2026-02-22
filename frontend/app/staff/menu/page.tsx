@@ -44,12 +44,12 @@ export default function MenuManagementPage() {
     const fetchData = async () => {
         try {
             const [itemRes, catRes] = await Promise.all([
-                fetch('http://127.0.0.1:8000/api/inventory/menu/items/', {
+                fetch('/api/inventory/menu/items/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 }),
-                fetch('http://127.0.0.1:8000/api/inventory/menu/categories/', {
+                fetch('/api/inventory/menu/categories/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -68,7 +68,7 @@ export default function MenuManagementPage() {
 
     const toggleAvailability = async (item: MenuItem) => {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/menu/items/${item.id}/`, {
+            const res = await fetch(`/api/inventory/menu/items/${item.id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export default function MenuManagementPage() {
     const deleteItem = async (id: number) => {
         if (!confirm("Are you sure you want to delete this item?")) return;
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/menu/items/${id}/`, {
+            const res = await fetch(`/api/inventory/menu/items/${id}/`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

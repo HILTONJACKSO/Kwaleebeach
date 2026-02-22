@@ -35,7 +35,7 @@ function EditStaffForm() {
         const fetchStaff = async () => {
             if (!token) return;
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/core/users/${id}/`, {
+                const res = await fetch(`/api/core/users/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -63,7 +63,7 @@ function EditStaffForm() {
         e.preventDefault();
         setSaving(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/core/users/${id}/`, {
+            const res = await fetch(`/api/core/users/${id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

@@ -24,7 +24,7 @@ export default function AddInventoryItemPage() {
         setLoading(true);
         try {
             // 1. Create the item
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/items/', {
+            const res = await fetch('/api/inventory/items/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export default function AddInventoryItemPage() {
 
                 // 2. If initial stock > 0, create a stock entry
                 if (parseFloat(newItem.initial_stock) > 0) {
-                    await fetch('http://127.0.0.1:8000/api/inventory/stocks/', {
+                    await fetch('/api/inventory/stocks/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

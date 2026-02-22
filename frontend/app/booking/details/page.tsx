@@ -42,9 +42,9 @@ function BookingDetailsContent() {
     const fetchData = async (id: string) => {
         try {
             const [roomRes, toursRes, packagesRes] = await Promise.all([
-                fetch(`http://127.0.0.1:8000/api/pms/rooms/${id}/`),
-                fetch('http://127.0.0.1:8000/api/recreation/activities/'),
-                fetch('http://127.0.0.1:8000/api/recreation/packages/')
+                fetch(`/api/pms/rooms/${id}/`),
+                fetch('/api/recreation/activities/'),
+                fetch('/api/recreation/packages/')
             ]);
 
             const roomData = await roomRes.json();

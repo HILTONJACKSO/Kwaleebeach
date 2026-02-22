@@ -23,7 +23,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     useEffect(() => {
         async function fetchItems() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/inventory/menu/items/?category_slug=${slug}`);
+                const res = await fetch(`/api/inventory/menu/items/?category_slug=${slug}`);
                 if (res.ok) {
                     const data = await res.json();
                     setItems(data);

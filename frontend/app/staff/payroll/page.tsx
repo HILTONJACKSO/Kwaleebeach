@@ -32,12 +32,12 @@ function PayrollDashboardContent() {
         const fetchData = async () => {
             try {
                 const [salRes, vouRes] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/api/finance/salaries/', {
+                    fetch('/api/finance/salaries/', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }
                     }),
-                    fetch('http://127.0.0.1:8000/api/finance/vouchers/', {
+                    fetch('/api/finance/vouchers/', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }

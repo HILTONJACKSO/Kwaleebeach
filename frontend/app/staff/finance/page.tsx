@@ -30,12 +30,12 @@ function FinanceDashboardContent() {
         const fetchData = async () => {
             try {
                 const [accRes, txRes] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/api/finance/accounts/', {
+                    fetch('/api/finance/accounts/', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }
                     }),
-                    fetch('http://127.0.0.1:8000/api/finance/transactions/', {
+                    fetch('/api/finance/transactions/', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }

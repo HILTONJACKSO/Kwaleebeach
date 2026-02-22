@@ -21,7 +21,7 @@ export default function BeachSellPage() {
     const [selectedPass, setSelectedPass] = useState<PassType | null>(null);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/api/recreation/types/', {
+        fetch('/api/recreation/types/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -42,7 +42,7 @@ export default function BeachSellPage() {
 
         setSaving(true);
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/recreation/passes/sell/', {
+            const res = await fetch('/api/recreation/passes/sell/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -30,12 +30,12 @@ export default function ReturnsPage() {
     const fetchData = async () => {
         try {
             const [orderRes, passRes] = await Promise.all([
-                fetch('http://127.0.0.1:8000/api/inventory/returns/', {
+                fetch('/api/inventory/returns/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 }),
-                fetch('http://127.0.0.1:8000/api/recreation/returns/', {
+                fetch('/api/recreation/returns/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -58,7 +58,7 @@ export default function ReturnsPage() {
     const handleApproveOrder = async (id: number, type: 'station' | 'admin') => {
         try {
             const endpoint = type === 'station' ? 'approve_station' : 'approve_admin';
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/returns/${id}/${endpoint}/`, {
+            const res = await fetch(`/api/inventory/returns/${id}/${endpoint}/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -75,7 +75,7 @@ export default function ReturnsPage() {
 
     const handleApprovePass = async (id: number) => {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/recreation/returns/${id}/approve/`, {
+            const res = await fetch(`/api/recreation/returns/${id}/approve/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

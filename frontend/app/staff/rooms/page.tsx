@@ -26,7 +26,7 @@ export default function RoomGrid() {
 
     const fetchRooms = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/pms/rooms/', {
+            const res = await fetch('/api/pms/rooms/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }

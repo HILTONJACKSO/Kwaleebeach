@@ -28,7 +28,7 @@ export default function BarPage() {
 
     const fetchReturns = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/order-returns/', {
+            const res = await fetch('/api/inventory/order-returns/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -48,7 +48,7 @@ export default function BarPage() {
     const fetchOrders = async () => {
         try {
             fetchReturns();
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/orders/active/', {
+            const res = await fetch('/api/inventory/orders/active/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -70,7 +70,7 @@ export default function BarPage() {
 
     const approveReturn = async (id: number) => {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/order-returns/${id}/approve_station/`, {
+            const res = await fetch(`/api/inventory/order-returns/${id}/approve_station/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -93,7 +93,7 @@ export default function BarPage() {
 
     const updateStatus = async (id: number, status: string) => {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/orders/${id}/update-status/`, {
+            const res = await fetch(`/api/inventory/orders/${id}/update-status/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

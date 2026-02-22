@@ -29,7 +29,7 @@ export default function BeachPage() {
     const [generatedPass, setGeneratedPass] = useState<any | null>(null);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/api/recreation/types/', {
+        fetch('/api/recreation/types/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -48,7 +48,7 @@ export default function BeachPage() {
 
     const fetchStats = () => {
         // In a real app we might filter stats by location, but for now we show global recreation stats or separate endpoints
-        fetch('http://127.0.0.1:8000/api/recreation/passes/stats/', {
+        fetch('/api/recreation/passes/stats/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -68,7 +68,7 @@ export default function BeachPage() {
     };
 
     const fetchRecent = () => {
-        fetch('http://127.0.0.1:8000/api/recreation/passes/recent/', {
+        fetch('/api/recreation/passes/recent/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -86,7 +86,7 @@ export default function BeachPage() {
     const handleVerify = async () => {
         if (!roomNumber) return;
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/recreation/passes/checkin-resident/`, {
+            const res = await fetch(`/api/recreation/passes/checkin-resident/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export default function BeachPage() {
 
     const handleSell = async (passType: PassType) => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/recreation/passes/sell/', {
+            const res = await fetch('/api/recreation/passes/sell/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ export default function BeachPage() {
     const markAsPrinted = async () => {
         if (!generatedPass) return;
         try {
-            await fetch(`http://127.0.0.1:8000/api/recreation/passes/${generatedPass.id}/mark-printed/`, {
+            await fetch(`/api/recreation/passes/${generatedPass.id}/mark-printed/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

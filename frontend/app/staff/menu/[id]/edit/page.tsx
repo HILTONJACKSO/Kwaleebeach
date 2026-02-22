@@ -42,7 +42,7 @@ export default function EditMenuItemPage() {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/menu/categories/', {
+            const res = await fetch('/api/inventory/menu/categories/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -57,7 +57,7 @@ export default function EditMenuItemPage() {
 
     const fetchItemData = async () => {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/menu/items/${id}/`, {
+            const res = await fetch(`/api/inventory/menu/items/${id}/`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -110,7 +110,7 @@ export default function EditMenuItemPage() {
         }
 
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/menu/items/${id}/`, {
+            const res = await fetch(`/api/inventory/menu/items/${id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

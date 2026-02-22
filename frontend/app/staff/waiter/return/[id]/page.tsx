@@ -21,7 +21,7 @@ export default function WaiterReturnPage() {
         }
         setLoading(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/orders/${orderId}/request-return/`, {
+            const res = await fetch(`/api/inventory/orders/${orderId}/request-return/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

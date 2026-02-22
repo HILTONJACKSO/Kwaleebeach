@@ -31,7 +31,7 @@ export default function StaffLayout({
         const delayDebounce = setTimeout(async () => {
             setIsSearching(true);
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/pms/search/?q=${searchQuery}`, {
+                const res = await fetch(`/api/pms/search/?q=${searchQuery}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }

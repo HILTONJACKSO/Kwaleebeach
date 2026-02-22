@@ -15,7 +15,7 @@ export default function CashierPaymentPage() {
     const [paymentMethod, setPaymentMethod] = useState('CASH');
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:8000/api/finance/invoices/${invoiceId}/`, {
+        fetch(`/api/finance/invoices/${invoiceId}/`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -29,7 +29,7 @@ export default function CashierPaymentPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/finance/invoices/${invoiceId}/pay/`, {
+            const res = await fetch(`/api/finance/invoices/${invoiceId}/pay/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

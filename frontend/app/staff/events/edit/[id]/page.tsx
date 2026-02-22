@@ -29,7 +29,7 @@ export default function EditEventPage() {
     useEffect(() => {
         const fetchEvent = async () => {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/recreation/events/${id}/`, {
+                const res = await fetch(`/api/recreation/events/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -88,7 +88,7 @@ export default function EditEventPage() {
         }
 
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/recreation/events/${id}/`, {
+            const res = await fetch(`/api/recreation/events/${id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

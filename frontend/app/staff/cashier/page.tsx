@@ -31,17 +31,17 @@ function CashierDashboardContent() {
     const fetchData = async () => {
         try {
             const [invRes, orderRes, passRes] = await Promise.all([
-                fetch('http://127.0.0.1:8000/api/finance/invoices/', {
+                fetch('/api/finance/invoices/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 }),
-                fetch('http://127.0.0.1:8000/api/inventory/orders/active/', {
+                fetch('/api/inventory/orders/active/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 }),
-                fetch('http://127.0.0.1:8000/api/recreation/passes/', {
+                fetch('/api/recreation/passes/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }

@@ -15,7 +15,7 @@ export default function EventsPage() {
 
     const fetchCMS = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/website/config/');
+            const res = await fetch('/api/website/config/');
             if (res.ok) {
                 const data = await res.json();
                 const configMap = data.reduce((acc: any, item: any) => {

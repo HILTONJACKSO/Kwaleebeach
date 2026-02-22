@@ -22,8 +22,8 @@ export default function CashierReturnPage() {
         setLoading(true);
         try {
             const url = type === 'order'
-                ? `http://127.0.0.1:8000/api/inventory/orders/${id}/request-return/`
-                : `http://127.0.0.1:8000/api/recreation/passes/${id}/request-return/`;
+                ? `/api/inventory/orders/${id}/request-return/`
+                : `/api/recreation/passes/${id}/request-return/`;
 
             const res = await fetch(url, {
                 method: 'POST',

@@ -24,7 +24,7 @@ export default function NewBookingPage() {
 
     useEffect(() => {
         // Fetch available rooms
-        fetch('http://127.0.0.1:8000/api/pms/rooms/', {
+        fetch('/api/pms/rooms/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -38,7 +38,7 @@ export default function NewBookingPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/pms/bookings/', {
+            const res = await fetch('/api/pms/bookings/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

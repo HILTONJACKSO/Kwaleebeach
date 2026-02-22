@@ -50,7 +50,7 @@ export default function ActivitiesPage() {
 
     const fetchCMS = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/website/config/');
+            const res = await fetch('/api/website/config/');
             if (res.ok) {
                 const data = await res.json();
                 const configMap = data.reduce((acc: any, item: any) => {
@@ -69,8 +69,8 @@ export default function ActivitiesPage() {
     const fetchData = async () => {
         try {
             const [toursRes, packagesRes] = await Promise.all([
-                fetch('http://127.0.0.1:8000/api/recreation/activities/'),
-                fetch('http://127.0.0.1:8000/api/recreation/packages/')
+                fetch('/api/recreation/activities/'),
+                fetch('/api/recreation/packages/')
             ]);
 
             const toursData = toursRes.ok ? await toursRes.json() : [];

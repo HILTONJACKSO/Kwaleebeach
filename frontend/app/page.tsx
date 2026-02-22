@@ -28,7 +28,7 @@ export default function Home() {
 
   useEffect(() => {
     // Fetch Rooms
-    fetch('http://127.0.0.1:8000/api/pms/rooms/')
+    fetch('/api/pms/rooms/')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -40,7 +40,7 @@ export default function Home() {
       .catch(err => console.error('Fetch rooms error:', err));
 
     // Fetch CMS Config
-    fetch('http://127.0.0.1:8000/api/website/config/')
+    fetch('/api/website/config/')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

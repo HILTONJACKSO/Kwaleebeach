@@ -35,7 +35,7 @@ function AddStaffForm() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/core/auth/register/', {
+            const res = await fetch('/api/core/auth/register/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

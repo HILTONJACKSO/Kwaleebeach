@@ -42,7 +42,7 @@ export default function StaffDashboard() {
 
     const fetchData = () => {
         // Fetch real dashboard stats
-        fetch('http://127.0.0.1:8000/api/inventory/reports/', {
+        fetch('/api/inventory/reports/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }

@@ -32,7 +32,7 @@ function StaffEventsPageContent() {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const res = await fetch('http://127.0.0.1:8000/api/recreation/events/', {
+                const res = await fetch('/api/recreation/events/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }

@@ -24,7 +24,7 @@ function UsersPageContent() {
         if (!token) return;
         setLoading(true);
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/core/users/', {
+            const res = await fetch('/api/core/users/', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

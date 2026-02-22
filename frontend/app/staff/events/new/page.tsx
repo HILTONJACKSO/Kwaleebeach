@@ -53,7 +53,7 @@ export default function NewEventPage() {
         }
 
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/recreation/events/', {
+            const res = await fetch('/api/recreation/events/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

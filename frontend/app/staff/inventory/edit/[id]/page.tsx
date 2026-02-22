@@ -22,7 +22,7 @@ export default function EditInventoryItemPage() {
     useEffect(() => {
         const fetchItem = async () => {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/inventory/items/${id}/`, {
+                const res = await fetch(`/api/inventory/items/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -52,7 +52,7 @@ export default function EditInventoryItemPage() {
         e.preventDefault();
         setSaving(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/items/${id}/`, {
+            const res = await fetch(`/api/inventory/items/${id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

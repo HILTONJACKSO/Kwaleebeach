@@ -43,7 +43,7 @@ function WaiterPageContent() {
 
     const fetchOrders = async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/inventory/orders/active/', {
+            const res = await fetch('/api/inventory/orders/active/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -70,7 +70,7 @@ function WaiterPageContent() {
 
     const markAsServed = async (id: number) => {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/orders/${id}/update-status/`, {
+            const res = await fetch(`/api/inventory/orders/${id}/update-status/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ function WaiterPageContent() {
 
         setSubmittingReturn(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/inventory/orders/${selectedReturnOrder}/request-return/`, {
+            const res = await fetch(`/api/inventory/orders/${selectedReturnOrder}/request-return/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

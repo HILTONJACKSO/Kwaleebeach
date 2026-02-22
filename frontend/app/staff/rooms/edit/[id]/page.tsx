@@ -27,7 +27,7 @@ export default function EditRoomPage() {
     useEffect(() => {
         const fetchRoom = async () => {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/pms/rooms/${id}/`, {
+                const res = await fetch(`/api/pms/rooms/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -88,7 +88,7 @@ export default function EditRoomPage() {
         }
 
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/pms/rooms/${id}/`, {
+            const res = await fetch(`/api/pms/rooms/${id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
