@@ -1,8 +1,9 @@
-// @ts-nocheck
 'use client';
 import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, ArrowRightLeft, X, Save, History } from 'lucide-react';
+import { Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, ArrowRightLeft, X, Save, History, Box, Truck, PlusCircle } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
+import Link from 'next/link';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 interface InventoryStock {
     id: number;
@@ -20,6 +21,7 @@ interface InventoryItem {
     selling_price: string;
     stocks: InventoryStock[];
     total_stock: number;
+    category?: string;
 }
 
 const DEPARTMENTS = [
@@ -31,9 +33,6 @@ const DEPARTMENTS = [
     { id: 'LAUNDRY', name: 'Laundry' },
     { id: 'OFFICE', name: 'Office' },
 ];
-
-import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function InventoryPage() {
     return (
@@ -48,6 +47,7 @@ function InventoryPageContent() {
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [filter, setFilter] = useState('ALL');
 
     const fetchData = async () => {
         try {
@@ -76,9 +76,15 @@ function InventoryPageContent() {
         item.sku.toLowerCase().includes(searchQuery.toLowerCase())
     ).filter(item => {
         if (filter === 'ALL') return true;
-        // Assuming item.category is one of 'BAR', 'KITCHEN', 'HOUSEKEEPING'
+        if (!item.category) return true;
         return item.category.toUpperCase() === filter.toUpperCase();
     });
+
+    const getStatus = (total: number) => {
+        if (total <= 0) return 'OUT';
+        if (total < 10) return 'LOW';
+        return 'IN';
+    };
 
     const getStatusColor = (status: 'IN' | 'LOW' | 'OUT') => {
         switch (status) {
@@ -105,18 +111,18 @@ function InventoryPageContent() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
-                    <button
-                        onClick={() => setIsTransferModalOpen(true)}
+                    <Link
+                        href="/staff/inventory/transfer"
                         className="px-6 py-4 bg-white border-2 border-gray-100 text-gray-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:border-blue-500 hover:text-blue-600 transition-all flex items-center justify-center gap-2 shadow-sm"
                     >
                         <ArrowRightLeft size={18} /> Transfer
-                    </button>
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
+                    </Link>
+                    <Link
+                        href="/staff/inventory/add"
                         className="px-8 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-gray-200"
                     >
                         <PlusCircle size={18} /> Add Item
-                    </button>
+                    </Link>
                 </div>
             </div>
 
@@ -140,7 +146,7 @@ function InventoryPageContent() {
                         <div className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Critical Reorder</div>
                     </div>
                     <div className="text-3xl md:text-4xl font-black text-gray-900">
-                        {inventory.filter(i => i.status === 'LOW' || i.status === 'OUT').length}
+                        {inventory.filter(i => getStatus(i.total_stock) !== 'IN').length}
                     </div>
                 </div>
 
@@ -151,7 +157,7 @@ function InventoryPageContent() {
                         </div>
                         <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Active Requests</div>
                     </div>
-                    <div className="text-3xl md:text-4xl font-black text-gray-900">12</div>
+                    <div className="text-3xl md:text-4xl font-black text-gray-900">0</div>
                 </div>
             </div>
 
@@ -188,7 +194,6 @@ function InventoryPageContent() {
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Item Details</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Departmental Stock</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Level</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Movement</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                             </tr>
                         </thead>
@@ -200,14 +205,56 @@ function InventoryPageContent() {
                                             <div className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 group-hover:scale-110 transition-transform">
                                                 <Box size={24} />
                                             </div>
+                                            <div>
+                                                <div className="font-bold text-gray-900">{item.name}</div>
+                                                <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{item.sku}</div>
+                                            </div>
                                         </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-wrap gap-2">
+                                            {item.stocks && item.stocks.length > 0 ? (
+                                                item.stocks.map(stock => (
+                                                    <div key={stock.id} className="px-3 py-1 bg-gray-100 rounded-lg text-[10px] font-bold">
+                                                        {stock.department_display}: {stock.quantity}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <span className="text-gray-400 text-[10px] italic">No departmental stock</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-lg font-black text-gray-900">{item.total_stock}</div>
+                                            <div className={`px-3 py-1 rounded-full border text-[10px] font-black tracking-widest ${getStatusColor(getStatus(item.total_stock))}`}>
+                                                {getStatus(item.total_stock)}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-right">
+                                        <Link
+                                            href={`/staff/inventory/edit/${item.id}`}
+                                            className="px-4 py-2 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
+                                        >
+                                            View & Edit
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    {filteredInventory.length === 0 && !loading && (
+                        <div className="p-20 text-center">
+                            <div className="bg-gray-50 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-gray-300">
+                                <Search size={40} />
+                            </div>
+                            <h3 className="text-xl font-black text-gray-900 mb-2">No items found</h3>
+                            <p className="text-gray-400 font-medium">Try adjusting your search or filters.</p>
+                        </div>
+                    )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
