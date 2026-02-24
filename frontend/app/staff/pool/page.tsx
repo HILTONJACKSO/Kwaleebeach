@@ -210,17 +210,17 @@ export default function PoolPage() {
                 </div>
 
                 {/* KPI Cards */}
-                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
-                    <div className="bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-sm flex-1 xl:min-w-[160px] flex flex-col items-center justify-center">
+                <div className="grid grid-cols-2 gap-4 w-full xl:w-auto">
+                    <div className="bg-white px-4 py-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center">
                         <div className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Today Revenue</div>
-                        <div className="text-2xl font-black text-gray-900">${stats.daily_revenue || '0.00'}</div>
+                        <div className="text-xl sm:text-2xl font-black text-gray-900">${stats.daily_revenue || '0.00'}</div>
                         <div className="text-[10px] text-emerald-500 font-bold bg-emerald-50 px-3 py-1 rounded-full mt-2">
                             {stats.passes_sold || 0} Visitors
                         </div>
                     </div>
-                    <div className="bg-cyan-50 px-6 py-4 rounded-2xl border border-cyan-100 shadow-sm flex-1 xl:min-w-[160px] flex flex-col items-center justify-center">
+                    <div className="bg-cyan-50 px-4 py-4 rounded-2xl border border-cyan-100 shadow-sm flex flex-col items-center justify-center text-center">
                         <div className="text-[10px] uppercase font-black text-cyan-600 tracking-widest mb-1">Month Total</div>
-                        <div className="text-2xl font-black text-gray-900">${stats.month_revenue || '0.00'}</div>
+                        <div className="text-xl sm:text-2xl font-black text-gray-900">${stats.month_revenue || '0.00'}</div>
                         <div className="text-[10px] text-cyan-600 font-bold bg-white px-3 py-1 rounded-full mt-2">
                             {stats.month_passes || 0} Total
                         </div>
@@ -254,7 +254,7 @@ export default function PoolPage() {
             </div>
 
             {/* Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
                 {activeTab === 'verify' ? (
                     <div className="card bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100">
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
@@ -302,19 +302,20 @@ export default function PoolPage() {
                             {passTypes.length > 0 ? (
                                 <div className="grid grid-cols-1 gap-4">
                                     {passTypes.map(pass => (
-                                        <div key={pass.id} className="p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:border-emerald-500 hover:shadow-md transition-all group">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
-                                                    <Ticket size={24} />
+                                        <div key={pass.id} className="p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-0 hover:border-emerald-500 hover:shadow-md transition-all group">
+                                            <div className="flex items-center gap-4 w-full sm:w-auto">
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 shrink-0">
+                                                    <Ticket size={20} className="sm:hidden" />
+                                                    <Ticket size={24} className="hidden sm:block" />
                                                 </div>
-                                                <div>
+                                                <div className="flex-1">
                                                     <div className="font-black text-gray-900 text-sm md:text-base">{pass.name}</div>
-                                                    <div className="text-xl font-black text-gray-500">${pass.price}</div>
+                                                    <div className="text-lg sm:text-xl font-black text-gray-500">${pass.price}</div>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => handleSell(pass)}
-                                                className="bg-gray-100 text-gray-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-emerald-500 hover:text-white transition-all shadow-sm group-hover:shadow-emerald-200"
+                                                className="w-full sm:w-auto bg-gray-100 text-gray-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-emerald-500 hover:text-white transition-all shadow-sm group-hover:shadow-emerald-200"
                                             >
                                                 Issue pass
                                             </button>
