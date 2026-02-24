@@ -21,21 +21,19 @@ function ReportsContent() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        System Reports <FileText className="text-gray-400" size={28} />
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        System Reports <FileText className="text-gray-400" size={32} />
                     </h1>
-                    <p className="text-gray-500 font-medium">Generate and export official documentation and data summaries.</p>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Generate and export official documentation and data summaries.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-6 py-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-sm font-bold text-gray-700">
-                        <Calendar size={18} />
-                        Date Range
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
+                    <button className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
+                        <Calendar size={18} /> Date Range
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-xl shadow-lg shadow-[#A88B68]/30 hover:bg-[#8B6B4A] transition-all text-sm font-bold">
-                        <Filter size={18} />
-                        Filter
+                    <button className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-xs font-black uppercase tracking-widest">
+                        <Filter size={18} /> Filter
                     </button>
                 </div>
             </div>

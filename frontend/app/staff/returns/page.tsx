@@ -92,21 +92,23 @@ export default function ReturnsPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Returns & Approvals</h1>
-                    <p className="text-gray-500 font-medium tracking-tight">Manage and authorize order cancellation/returns.</p>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        Returns & Approvals <RefreshCw className="text-[var(--color-primary)]" size={32} />
+                    </h1>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Manage and authorize order cancellation/returns.</p>
                 </div>
-                <div className="flex bg-white p-1 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm w-full xl:w-fit">
                     <button
                         onClick={() => setActiveTab('orders')}
-                        className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`flex-1 xl:flex-none px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
                     >
                         Food & Drink
                     </button>
                     <button
                         onClick={() => setActiveTab('passes')}
-                        className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'passes' ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`flex-1 xl:flex-none px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'passes' ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
                     >
                         Pool Passes
                     </button>
@@ -116,19 +118,19 @@ export default function ReturnsPage() {
             <div className="grid grid-cols-1 gap-6">
                 {activeTab === 'orders' ? (
                     orderReturns.filter(r => r.status === 'REQUESTED' || r.status === 'APPROVED_STATION').map(ret => (
-                        <div key={ret.id} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-8 items-start md:items-center">
-                            <div className="w-16 h-16 bg-orange-50 text-orange-600 rounded-3xl flex items-center justify-center shrink-0">
+                        <div key={ret.id} className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row gap-6 lg:gap-8 items-start lg:items-center">
+                            <div className="w-14 h-14 md:w-16 md:h-16 bg-orange-50 text-orange-600 rounded-2xl md:rounded-3xl flex items-center justify-center shrink-0">
                                 <RefreshCw size={28} />
                             </div>
 
-                            <div className="flex-1 space-y-4">
-                                <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex-1 space-y-4 w-full">
+                                <div className="flex flex-wrap items-center gap-3 md:gap-4">
                                     <div className="px-4 py-1.5 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
                                         Order #{ret.order}
                                     </div>
                                     <div className="flex items-center gap-2 text-gray-400 text-xs font-bold">
                                         <Clock size={14} />
-                                        {new Date(ret.requested_at).toLocaleString()}
+                                        {new Date(ret.requested_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                                     </div>
                                     <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${ret.status === 'REQUESTED' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-blue-50 text-blue-600 border-blue-100'
                                         }`}>
@@ -138,15 +140,15 @@ export default function ReturnsPage() {
 
                                 <div className="flex gap-3 items-start">
                                     <MessageCircle className="text-gray-300 mt-1 shrink-0" size={18} />
-                                    <p className="text-gray-700 font-medium italic">"{ret.reason}"</p>
+                                    <p className="text-gray-700 font-medium italic text-sm md:text-base">"{ret.reason}"</p>
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 shrink-0">
+                            <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
                                 {ret.status === 'REQUESTED' && (
                                     <button
                                         onClick={() => handleApproveOrder(ret.id, 'station')}
-                                        className="px-6 py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 flex items-center gap-2"
+                                        className="flex-1 lg:flex-none px-6 py-4 lg:py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 flex items-center justify-center gap-2"
                                     >
                                         <CheckCircle size={16} /> Station Approve
                                     </button>

@@ -52,23 +52,25 @@ function StaffEventsPageContent() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Event Management</h1>
-                    <p className="text-gray-500 font-medium tracking-tight">Schedule and track resort experiences and bookings.</p>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        Event Management <Calendar className="text-[var(--color-primary)]" size={32} />
+                    </h1>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Schedule and track resort experiences and bookings.</p>
                 </div>
                 <Link
                     href="/staff/events/new"
-                    className="bg-gray-900 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-[var(--color-primary)] transition-all"
+                    className="w-full xl:w-auto bg-gray-900 text-white px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] transition-all shadow-lg shadow-gray-200"
                 >
                     <Plus size={18} /> Create New Event
                 </Link>
             </div>
 
             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="bg-white rounded-[2.5rem] p-8 h-64 animate-pulse border border-gray-100">
+                        <div key={i} className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 h-64 animate-pulse border border-gray-100">
                             <div className="w-12 h-12 bg-gray-100 rounded-2xl mb-6"></div>
                             <div className="h-6 w-3/4 bg-gray-100 rounded-lg mb-4"></div>
                             <div className="h-4 w-1/2 bg-gray-100 rounded-lg"></div>
@@ -76,7 +78,7 @@ function StaffEventsPageContent() {
                     ))}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                     {events.map(event => (
                         <div key={event.id} className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-500 flex flex-col">
                             {event.image ? (

@@ -132,30 +132,44 @@ class AccessPassViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='sell')
     def sell_pass(self, request):
         pass_type_id = request.data.get('pass_type_id')
-        pass_type = PassType.objects.get(id=pass_type_id)
+        custom_name = request.data.get('custom_name')
+        custom_price = request.data.get('custom_price')
+        location = request.data.get('location')
+        
+        if custom_name and custom_price is not None and location:
+            # Create or get custom event pass type
+            pass_type, _ = PassType.objects.get_or_create(
+                name=custom_name,
+                location=location,
+                defaults={'price': custom_price}
+            )
+            final_price = float(custom_price)
+        else:
+            pass_type = PassType.objects.get(id=pass_type_id)
+            final_price = float(pass_type.price)
         
         access_pass = AccessPass.objects.create(
             pass_type=pass_type,
-            amount_paid=pass_type.price,
+            amount_paid=final_price,
             status='ACTIVE'
         )
 
         # Create Invoice for Cashier
-        if pass_type.price > 0:
+        if final_price > 0:
             try:
                 invoice = Invoice.objects.create(
                     invoice_number=f"INV-REC-{uuid.uuid4().hex[:6].upper()}",
-                    total_ht=pass_type.price,
-                    total_ft=pass_type.price,
-                    balance_ptd=pass_type.price,
+                    total_ht=final_price,
+                    total_ft=final_price,
+                    balance_ptd=final_price,
                     is_paid=False
                 )
                 InvoiceItem.objects.create(
                     invoice=invoice,
                     description=f"Recreation Pass: {pass_type.name} ({pass_type.location})",
                     quantity=1,
-                    unit_price=pass_type.price,
-                    total_line=pass_type.price
+                    unit_price=final_price,
+                    total_line=final_price
                 )
             except Exception as e:
                 print(f"Failed to create recreation invoice: {e}")

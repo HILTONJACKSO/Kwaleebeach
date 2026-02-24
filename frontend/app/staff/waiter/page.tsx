@@ -130,23 +130,23 @@ function WaiterPageContent() {
     return (
         <div className="space-y-10">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
+                <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3 flex-wrap">
                         Waiter Station <Coffee className="text-[var(--color-primary)]" size={32} />
                     </h1>
-                    <p className="text-gray-500 font-medium tracking-tight">Manage service for ready orders across the resort.</p>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Manage service for ready orders across the resort.</p>
                 </div>
 
                 {/* Service Stats Card */}
-                <div className="bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100 shadow-sm min-w-[240px] text-left">
+                <div className="bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100 shadow-sm flex-1 sm:min-w-[280px]">
                     <h3 className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Service (Waiter)</h3>
-                    <div className="flex justify-between items-end">
+                    <div className="flex justify-between items-end gap-4">
                         <div>
                             <div className="text-xl font-black text-gray-900">$6,430.00</div>
                             <div className="text-[10px] font-medium text-emerald-600">Total Processed</div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right shrink-0">
                             <div className="text-[10px] font-bold text-gray-500">231 Served</div>
                             <div className="text-[10px] text-gray-400">14 mins Avg</div>
                         </div>
@@ -168,15 +168,15 @@ function WaiterPageContent() {
                         <p className="text-gray-400">No orders are currently waiting to be served.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {readyOrders.map(order => (
-                            <div key={order.id} className="bg-emerald-50 rounded-[2.5rem] border-2 border-emerald-100 shadow-sm overflow-hidden relative">
+                            <div key={order.id} className="bg-emerald-50 rounded-[2rem] md:rounded-[2.5rem] border-2 border-emerald-100 shadow-sm overflow-hidden relative">
                                 <div className="absolute top-0 right-0 p-6">
                                     <span className="bg-emerald-200 text-emerald-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
                                         READY
                                     </span>
                                 </div>
-                                <div className="p-8">
+                                <div className="p-6 md:p-8">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="bg-white p-3 rounded-2xl shadow-sm">
                                             <Hash size={20} className="text-gray-900" />
@@ -238,27 +238,25 @@ function WaiterPageContent() {
                     <Utensils size={20} /> In the Kitchen ({activeOrders.length})
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6 gap-4">
                     {activeOrders.map(order => (
-                        <div key={order.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 opacity-70 hover:opacity-100 transition-opacity flex justify-between items-center group">
-                            <div>
+                        <div key={order.id} className="bg-white p-5 rounded-2xl border border-gray-100 opacity-70 hover:opacity-100 transition-opacity flex justify-between items-center group">
+                            <div className="w-full">
                                 <div className="flex justify-between items-start mb-2 gap-4">
                                     <span className="font-bold text-gray-900">#{order.id}</span>
                                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${order.status === 'PREPARING' ? 'bg-orange-50 text-orange-500 border-orange-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
                                         {order.status}
                                     </span>
                                 </div>
-                                <div className="text-xs font-medium text-gray-500 mb-2">
+                                <div className="text-[11px] font-medium text-gray-500 mb-3 truncate">
                                     {getLocationLabel(order.location_type)}: {order.room}
                                 </div>
-                                <div className="text-xs text-gray-400">
-                                    <Link
-                                        href={`/staff/waiter/return/${order.id}`}
-                                        className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"
-                                    >
-                                        <RefreshCw size={14} /> Return
-                                    </Link>
-                                </div>
+                                <Link
+                                    href={`/staff/waiter/return/${order.id}`}
+                                    className="w-full p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest"
+                                >
+                                    <RefreshCw size={12} /> Request Return
+                                </Link>
                             </div>
                         </div>
                     ))}

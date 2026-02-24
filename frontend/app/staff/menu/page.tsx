@@ -114,36 +114,37 @@ export default function MenuManagementPage() {
         <ProtectedRoute allowedRoles={['ADMIN']}>
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                        <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-2">Menu Management</h1>
-                        <p className="text-gray-500 font-medium">Create and manage your restaurant and bar offerings.</p>
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                    <div className="flex-1">
+                        <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                            Menu Management <Utensils className="text-orange-500" size={32} />
+                        </h1>
+                        <p className="text-gray-500 font-medium tracking-tight text-sm">Create and manage your restaurant and bar offerings.</p>
                     </div>
                     <Link
                         href="/staff/menu/new"
-                        className="bg-gray-900 text-white px-8 py-4 rounded-[1.5rem] font-bold flex items-center gap-3 hover:bg-[var(--color-primary)] transition-all shadow-xl shadow-gray-200"
+                        className="w-full xl:w-auto bg-gray-900 text-white px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] transition-all shadow-lg shadow-gray-200"
                     >
-                        <Plus size={20} strokeWidth={3} />
-                        Add New Item
+                        <Plus size={18} /> Add New Item
                     </Link>
                 </div>
 
                 {/* Filters & Search */}
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="relative flex-1 group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--color-primary)] transition-colors" size={20} />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--color-primary)] transition-colors" size={20} />
                         <input
                             type="text"
-                            placeholder="Search items by name or description..."
-                            className="w-full pl-14 pr-6 py-5 bg-white border-2 border-transparent rounded-[1.5rem] shadow-sm focus:border-[var(--color-primary)] focus:outline-none transition-all font-medium text-gray-900"
+                            placeholder="Search items..."
+                            className="w-full pl-16 pr-6 py-4 bg-white border-2 border-transparent rounded-2xl shadow-sm focus:border-[var(--color-primary)] focus:outline-none transition-all font-medium text-gray-900"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <div className="flex bg-white p-2 rounded-[1.5rem] shadow-sm border border-gray-100 overflow-x-auto no-scrollbar">
+                    <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
                         <button
                             onClick={() => setSelectedCategory('all')}
-                            className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedCategory === 'all' ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedCategory === 'all' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             All Items
                         </button>
@@ -151,7 +152,7 @@ export default function MenuManagementPage() {
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
-                                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedCategory === cat.id ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedCategory === cat.id ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
                             >
                                 {cat.name}
                             </button>
@@ -161,13 +162,13 @@ export default function MenuManagementPage() {
 
                 {/* Items Grid */}
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="bg-white h-[450px] rounded-[2.5rem] animate-pulse border border-gray-100"></div>
+                            <div key={i} className="bg-white h-[450px] rounded-[2.5rem] animate-pulse border border-gray-100 shadow-sm"></div>
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                         {filteredItems.map(item => (
                             <div key={item.id} className="group bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col">
                                 {/* Image Section */}
@@ -231,10 +232,11 @@ export default function MenuManagementPage() {
                             </div>
                         ))}
                     </div>
-                )}
+                )
+                }
 
                 {/* Modal removed */}
-            </div>
-        </ProtectedRoute>
+            </div >
+        </ProtectedRoute >
     );
 }

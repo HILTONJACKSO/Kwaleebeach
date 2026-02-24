@@ -104,18 +104,18 @@ function CMSContent() {
     return (
         <div className="space-y-8 animate-fade-in">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm">
                 <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
                         <Sparkles size={12} /> Dynamic Experience
                     </div>
-                    <h1 className="text-4xl font-black text-gray-900 tracking-tight">Website <span className="text-[var(--color-primary)]">CMS</span></h1>
-                    <p className="text-gray-500 font-medium tracking-tight mt-1">Directly curate the visitor experience without touching code.</p>
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Website <span className="text-[var(--color-primary)]">CMS</span></h1>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm mt-1">Directly curate the visitor experience without touching code.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
                     <button
                         onClick={fetchConfigs}
-                        className="p-4 bg-gray-50 text-gray-400 hover:text-gray-900 rounded-2xl transition-all"
+                        className="flex items-center justify-center p-4 bg-gray-50 text-gray-400 hover:text-gray-900 rounded-2xl transition-all"
                         title="Reload Content"
                     >
                         <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
@@ -123,7 +123,7 @@ function CMSContent() {
                     <button
                         onClick={saveChanges}
                         disabled={saving}
-                        className="bg-gray-900 text-white px-8 py-4 rounded-2xl text-sm font-black uppercase tracking-widest flex items-center gap-3 hover:bg-[var(--color-primary)] transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
+                        className="flex-1 xl:flex-none bg-gray-900 text-white px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[var(--color-primary)] transition-all shadow-lg shadow-gray-200 disabled:opacity-50"
                     >
                         {saving ? "Publishing..." : <>Publish Changes <Save size={18} /></>}
                     </button>

@@ -94,25 +94,25 @@ function PayrollDashboardContent() {
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Payroll & Vouchers</h1>
-                    <p className="text-gray-500 font-medium">Manage employee compensation and company disbursements.</p>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        Payroll & Vouchers <Banknote className="text-blue-600" size={32} />
+                    </h1>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Manage employee compensation and company disbursements.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Link href="/staff/payroll/new" className="flex items-center gap-2 px-6 py-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-sm font-bold text-gray-700">
-                        <Plus size={18} />
-                        New Voucher
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
+                    <Link href="/staff/payroll/new" className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
+                        <Plus size={18} /> New Voucher
                     </Link>
-                    <button className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-sm font-bold">
-                        <Banknote size={18} />
-                        Process Payroll
+                    <button className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-xs font-black uppercase tracking-widest">
+                        <Banknote size={18} /> Process Payroll
                     </button>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {stats.map((stat, i) => (
                     <div key={i} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-all">
                         <div className="flex items-center justify-between mb-4">
@@ -121,8 +121,8 @@ function PayrollDashboardContent() {
                             </div>
                         </div>
                         <div className="text-2xl font-black text-gray-900 mb-1">{stat.value}</div>
-                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-tight">{stat.name}</div>
-                        <div className="mt-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.sub}</div>
+                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight">{stat.name}</div>
+                        <div className="mt-2 text-[10px] font-black text-gray-400 uppercase tracking-widest opacity-60">{stat.sub}</div>
                     </div>
                 ))}
             </div>
@@ -136,8 +136,8 @@ function PayrollDashboardContent() {
                             <Filter size={18} />
                         </button>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                    <div className="overflow-x-auto scrollbar-hide">
+                        <table className="w-full text-left min-w-[600px]">
                             <thead>
                                 <tr className="border-b border-gray-50">
                                     <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Employee</th>
@@ -181,15 +181,19 @@ function PayrollDashboardContent() {
 
                 {/* Expense Vouchers */}
                 <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                    <div className="p-8 border-b border-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <h2 className="text-xl font-black text-gray-900 tracking-tight">Expense Vouchers</h2>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-                            <Search size={16} className="text-gray-400" />
-                            <input type="text" placeholder="Search vouchers..." className="bg-transparent border-none text-xs font-bold focus:ring-0 w-32" />
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Search vouchers..."
+                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                    <div className="overflow-x-auto scrollbar-hide">
+                        <table className="w-full text-left min-w-[700px]">
                             <thead>
                                 <tr className="border-b border-gray-50">
                                     <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Voucher #</th>

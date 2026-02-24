@@ -63,21 +63,23 @@ function UsersPageContent() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Staff Management</h1>
-                    <p className="text-gray-500 font-medium tracking-tight">Monitor team presence and manage access permissions.</p>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        Staff Management <Users className="text-blue-600" size={32} />
+                    </h1>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Monitor team presence and manage access permissions.</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
                     <button
                         onClick={fetchUsers}
-                        className="bg-white border border-gray-200 text-gray-600 px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-gray-50 transition-all"
+                        className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"
                     >
                         Refresh List
                     </button>
                     <Link
                         href="/staff/users/add"
-                        className="bg-gray-900 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-[var(--color-primary)] transition-all"
+                        className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-xs font-black uppercase tracking-widest"
                     >
                         <Plus size={18} /> Add New Staff
                     </Link>
@@ -89,7 +91,7 @@ function UsersPageContent() {
                     <div className="w-12 h-12 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {staff.map(person => (
                         <Link
                             key={person.id}

@@ -15,8 +15,10 @@ interface PassType {
 
 export default function BeachPage() {
     const { showNotification, showModal } = useUI();
-    const [activeTab, setActiveTab] = useState<'verify' | 'sell'>('verify');
+    const [activeTab, setActiveTab] = useState<'verify' | 'sell' | 'special'>('verify');
     const [roomNumber, setRoomNumber] = useState('');
+    const [customEventName, setCustomEventName] = useState('');
+    const [customEventPrice, setCustomEventPrice] = useState('');
     const [recentPasses, setRecentPasses] = useState<any[]>([]);
     const [verificationResult, setVerificationResult] = useState<{ valid: boolean; message: string; guest_name?: string } | null>(null);
     const [passTypes, setPassTypes] = useState<PassType[]>([]);
@@ -29,18 +31,27 @@ export default function BeachPage() {
     const [generatedPass, setGeneratedPass] = useState<any | null>(null);
 
     useEffect(() => {
-        fetch('/api/recreation/types/', {
+        fetch('/api/recreation/types/?t=' + new Date().getTime(), {
+            cache: 'no-store',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (Array.isArray(data)) {
                     setPassTypes(data.filter((p: PassType) => p.location === 'BEACH'));
+                } else {
+                    console.error('Invalid data format:', data);
                 }
             })
-            .catch(err => console.error('Fetch pass types error:', err));
+            .catch(err => {
+                console.error('Fetch pass types error:', err);
+                showNotification('Failed to fetch pass types', 'error');
+            });
 
         fetchStats();
         fetchRecent();
@@ -50,7 +61,7 @@ export default function BeachPage() {
         // In a real app we might filter stats by location, but for now we show global recreation stats or separate endpoints
         fetch('/api/recreation/passes/stats/', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
             .then(res => res.json())
@@ -70,7 +81,7 @@ export default function BeachPage() {
     const fetchRecent = () => {
         fetch('/api/recreation/passes/recent/', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
             .then(res => res.json())
@@ -90,7 +101,7 @@ export default function BeachPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({ room_number: roomNumber, location: 'BEACH' })
             });
@@ -117,18 +128,52 @@ export default function BeachPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({ pass_type_id: passType.id })
             });
             if (res.ok) {
                 const data = await res.json();
                 showNotification(`${passType.name} Sold!`, 'success');
+                setGeneratedPass(data);
                 fetchStats();
                 fetchRecent();
             }
         } catch (e) {
             showNotification('Sale failed', 'error');
+        }
+    };
+
+    const handleSellCustom = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!customEventName || !customEventPrice) return;
+
+        try {
+            const res = await fetch('/api/recreation/passes/sell/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                },
+                body: JSON.stringify({
+                    custom_name: customEventName,
+                    custom_price: parseFloat(customEventPrice),
+                    location: 'BEACH'
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                showNotification(`${customEventName} Pass Issued!`, 'success');
+                setGeneratedPass(data);
+                setCustomEventName('');
+                setCustomEventPrice('');
+                fetchStats();
+                fetchRecent();
+            } else {
+                showNotification('Sale failed', 'error');
+            }
+        } catch (e) {
+            showNotification('Connection error', 'error');
         }
     };
 
@@ -138,7 +183,7 @@ export default function BeachPage() {
             await fetch(`/api/recreation/passes/${generatedPass.id}/mark-printed/`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             fetchRecent();
@@ -158,27 +203,27 @@ export default function BeachPage() {
             )}
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3 flex-wrap">
                         Beach Access <Umbrella className="text-orange-500" size={32} />
                     </h1>
-                    <p className="text-gray-500 font-medium tracking-tight">Private beach entry and lounger rentals.</p>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Private beach entry and lounger rentals.</p>
                 </div>
 
                 {/* KPI Cards */}
-                <div className="flex gap-4">
-                    <div className="bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-sm text-center min-w-[140px]">
-                        <div className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Today's Revenue</div>
+                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                    <div className="bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-sm flex-1 xl:min-w-[160px] flex flex-col items-center justify-center">
+                        <div className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Today Revenue</div>
                         <div className="text-2xl font-black text-gray-900">${stats.daily_revenue || '0.00'}</div>
-                        <div className="text-[10px] text-emerald-500 font-bold bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-1">
+                        <div className="text-[10px] text-emerald-500 font-bold bg-emerald-50 px-3 py-1 rounded-full mt-2">
                             {stats.passes_sold || 0} Visitors
                         </div>
                     </div>
-                    <div className="bg-orange-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm text-center min-w-[140px]">
+                    <div className="bg-orange-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm flex-1 xl:min-w-[160px] flex flex-col items-center justify-center">
                         <div className="text-[10px] uppercase font-black text-orange-600 tracking-widest mb-1">Month Total</div>
                         <div className="text-2xl font-black text-gray-900">${stats.month_revenue || '0.00'}</div>
-                        <div className="text-[10px] text-orange-600 font-bold bg-white px-2 py-0.5 rounded-full inline-block mt-1">
+                        <div className="text-[10px] text-orange-600 font-bold bg-white px-3 py-1 rounded-full mt-2">
                             {stats.month_passes || 0} Total
                         </div>
                     </div>
@@ -186,44 +231,51 @@ export default function BeachPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 border-b border-gray-200">
+            <div className="flex flex-wrap gap-4 border-b border-gray-200">
                 <button
                     onClick={() => setActiveTab('verify')}
-                    className={`pb-4 px-4 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'verify' ? 'border-b-4 border-orange-500 text-orange-600' : 'text-gray-400 hover:text-gray-600'
+                    className={`pb-4 px-4 text-xs md:text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'verify' ? 'border-b-4 border-orange-500 text-orange-600' : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
-                    Guest Verification
+                    Verification
                 </button>
                 <button
                     onClick={() => setActiveTab('sell')}
-                    className={`pb-4 px-4 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'sell' ? 'border-b-4 border-emerald-500 text-emerald-600' : 'text-gray-400 hover:text-gray-600'
+                    className={`pb-4 px-4 text-xs md:text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'sell' ? 'border-b-4 border-emerald-500 text-emerald-600' : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
-                    Sell Access Pass
+                    Access Pass
+                </button>
+                <button
+                    onClick={() => setActiveTab('special')}
+                    className={`pb-4 px-4 text-xs md:text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'special' ? 'border-b-4 border-purple-500 text-purple-600' : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                >
+                    Special Event
                 </button>
             </div>
 
             {/* Content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 {activeTab === 'verify' ? (
-                    <div className="card bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
-                        <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                    <div className="card bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100">
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
                             <UserCheck className="text-orange-500" /> Verify Resident
                         </h2>
-                        <div className="flex gap-3 mb-8">
+                        <div className="flex flex-col sm:flex-row gap-4 mb-8">
                             <div className="flex-1 relative">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
                                 <input
                                     type="text"
-                                    placeholder="Enter Room Number..."
+                                    placeholder="Room Number..."
                                     value={roomNumber}
                                     onChange={(e) => setRoomNumber(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl font-bold text-lg focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl font-bold text-lg focus:ring-2 focus:ring-orange-500 outline-none transition-all border-none"
                                 />
                             </div>
                             <button
                                 onClick={handleVerify}
-                                className="bg-orange-500 text-white px-8 rounded-2xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-200"
+                                className="w-full sm:w-auto bg-orange-500 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-orange-600 transition-all shadow-lg shadow-orange-200"
                             >
                                 Verify
                             </button>
@@ -243,19 +295,78 @@ export default function BeachPage() {
                             </div>
                         )}
                     </div>
-                ) : (
-                    <div className="card bg-white p-12 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col items-center text-center justify-center">
-                        <div className="w-24 h-24 bg-orange-50 rounded-[2rem] flex items-center justify-center mb-8">
-                            <CreditCard className="text-orange-500" size={48} />
+                ) : activeTab === 'sell' ? (
+                    <div className="card bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100">
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                            <Ticket className="text-orange-500" /> Issue Access Pass
+                        </h2>
+                        <div className="space-y-4">
+                            {passTypes.length > 0 ? (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {passTypes.map(pass => (
+                                        <div key={pass.id} className="p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:border-orange-500 hover:shadow-md transition-all group">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+                                                    <Sun size={24} />
+                                                </div>
+                                                <div>
+                                                    <div className="font-black text-gray-900 text-sm md:text-base">{pass.name}</div>
+                                                    <div className="text-xl font-black text-gray-500">${pass.price}</div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleSell(pass)}
+                                                className="bg-gray-100 text-gray-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-orange-500 hover:text-white transition-all shadow-sm group-hover:shadow-orange-200"
+                                            >
+                                                Issue pass
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 font-bold">
+                                    No Beach Passes Configured
+                                </div>
+                            )}
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-4">Beach Sales Terminal</h2>
-                        <p className="text-gray-400 max-w-xs mb-10">Authorize private beach access and lounger rentals. Secure digital ticketing for all walk-in visitors.</p>
-                        <Link
-                            href="/staff/beach/sell"
-                            className="bg-gray-900 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-sm hover:bg-orange-600 transition-all shadow-xl shadow-gray-200 flex items-center gap-3"
-                        >
-                            <Ticket size={20} /> Open Sales Terminal
-                        </Link>
+                    </div>
+                ) : (
+                    <div className="card bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100">
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                            <Ticket className="text-purple-500" /> Special Event Pass
+                        </h2>
+                        <form onSubmit={handleSellCustom} className="space-y-6">
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Event Name / Pass Title</label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="e.g. Sunset DJ Party"
+                                    value={customEventName}
+                                    onChange={(e) => setCustomEventName(e.target.value)}
+                                    className="w-full bg-gray-50 border-none rounded-2xl px-4 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-purple-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Price ($)</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    value={customEventPrice}
+                                    onChange={(e) => setCustomEventPrice(e.target.value)}
+                                    className="w-full bg-gray-50 border-none rounded-2xl px-4 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-purple-500"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-purple-600 text-white font-black uppercase tracking-widest text-sm py-4 rounded-2xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-200"
+                            >
+                                Issue Custom Pass
+                            </button>
+                        </form>
                     </div>
                 )}
 
@@ -275,53 +386,55 @@ export default function BeachPage() {
             <div className="pt-8 border-t border-gray-200">
                 <h2 className="text-xl font-black text-gray-900 mb-6">Recent Activity</h2>
                 <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="p-6 text-xs font-black text-gray-400 uppercase tracking-widest">Time</th>
-                                <th className="p-6 text-xs font-black text-gray-400 uppercase tracking-widest">Guest / Room</th>
-                                <th className="p-6 text-xs font-black text-gray-400 uppercase tracking-widest">Pass Type</th>
-                                <th className="p-6 text-xs font-black text-gray-400 uppercase tracking-widest">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {recentPasses.map(pass => (
-                                <tr key={pass.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="p-6 font-medium text-gray-500">
-                                        {new Date(pass.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </td>
-                                    <td className="p-6 font-bold text-gray-900">
-                                        {pass.guest_name || 'Walk-in'}
-                                        {pass.room_number && <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded-lg text-gray-500">Room {pass.room_number}</span>}
-                                    </td>
-                                    <td className="p-6">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
-                                            {pass.pass_type_name}
-                                        </span>
-                                    </td>
-                                    <td className="p-6">
-                                        {pass.is_printed ? (
-                                            <span className="text-gray-400 font-bold text-sm flex items-center gap-1 cursor-not-allowed">
-                                                <CheckCircle size={14} /> Printed
-                                            </span>
-                                        ) : (
-                                            <button
-                                                onClick={() => setGeneratedPass({ ...pass, location: 'BEACH' })}
-                                                className="text-orange-600 hover:text-orange-800 font-bold text-sm underline decoration-2 underline-offset-4"
-                                            >
-                                                Print Ticket
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {recentPasses.length === 0 && (
+                    <div className="overflow-x-auto scrollbar-hide">
+                        <table className="w-full text-left min-w-[700px]">
+                            <thead className="bg-gray-50/80 border-b border-gray-100">
                                 <tr>
-                                    <td colSpan={4} className="p-8 text-center text-gray-400">No recent activity found.</td>
+                                    <th className="px-6 md:px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</th>
+                                    <th className="px-6 md:px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Guest / Room</th>
+                                    <th className="px-6 md:px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Pass Type</th>
+                                    <th className="px-6 md:px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {recentPasses.map(pass => (
+                                    <tr key={pass.id} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="p-6 font-medium text-gray-500">
+                                            {new Date(pass.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </td>
+                                        <td className="p-6 font-bold text-gray-900">
+                                            {pass.guest_name || 'Walk-in'}
+                                            {pass.room_number && <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded-lg text-gray-500">Room {pass.room_number}</span>}
+                                        </td>
+                                        <td className="p-6">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
+                                                {pass.pass_type_name}
+                                            </span>
+                                        </td>
+                                        <td className="p-6">
+                                            {pass.is_printed ? (
+                                                <span className="text-gray-400 font-bold text-sm flex items-center gap-1 cursor-not-allowed">
+                                                    <CheckCircle size={14} /> Printed
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setGeneratedPass({ ...pass, location: 'BEACH' })}
+                                                    className="text-orange-600 hover:text-orange-800 font-bold text-sm underline decoration-2 underline-offset-4"
+                                                >
+                                                    Print Ticket
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                                {recentPasses.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="px-8 py-12 text-center text-gray-400 font-medium bg-gray-50/30">No recent activity.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

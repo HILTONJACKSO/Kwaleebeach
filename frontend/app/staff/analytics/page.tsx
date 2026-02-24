@@ -22,27 +22,27 @@ function AnalyticsContent() {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                    Analytics Dashboard <PieChart className="text-[var(--color-primary)]" size={28} />
+                <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                    Analytics Dashboard <PieChart className="text-[var(--color-primary)]" size={32} />
                 </h1>
-                <p className="text-gray-500 font-medium">Real-time resort performance metrics and trends.</p>
+                <p className="text-gray-500 font-medium tracking-tight text-sm">Real-time resort performance metrics and trends.</p>
             </div>
 
             {/* Key Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {keyMetrics.map((metric, i) => (
                     <div key={i} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-all">
                         <div className="flex items-center justify-between mb-4">
                             <div className="p-3 bg-gray-50 text-gray-900 rounded-2xl">
                                 {metric.icon}
                             </div>
-                            <div className={`flex items-center gap-1 text-sm font-bold ${metric.isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+                            <div className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest ${metric.isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
                                 {metric.trend}
-                                {metric.isPositive ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+                                {metric.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                             </div>
                         </div>
                         <div className="text-3xl font-black text-gray-900 tracking-tighter mb-1">{metric.value}</div>
-                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{metric.name}</div>
+                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{metric.name}</div>
                     </div>
                 ))}
             </div>
@@ -50,10 +50,10 @@ function AnalyticsContent() {
             {/* Charts View (Mockups for now) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Revenue Chart Placeholder */}
-                <div className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                         <h2 className="text-xl font-black text-gray-900 tracking-tight">Revenue Trends</h2>
-                        <select className="bg-gray-50 border-none text-xs font-bold text-gray-600 rounded-xl focus:ring-0">
+                        <select className="w-full sm:w-auto bg-gray-50 border-none text-xs font-bold text-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none p-3">
                             <option>This Week</option>
                             <option>This Month</option>
                             <option>This Year</option>
