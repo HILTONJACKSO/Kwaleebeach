@@ -35,7 +35,22 @@ function WaiterPageContent() {
     const { showNotification } = useUI();
     const [readyOrders, setReadyOrders] = useState<Order[]>([]);
     const [activeOrders, setActiveOrders] = useState<Order[]>([]);
+    const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    const fetchStats = async () => {
+        try {
+            const res = await fetch('/api/inventory/reports/', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setStats(data.waiter_stats);
+            }
+        } catch (e) { console.error(e); }
+    };
     const [selectedReturnOrder, setSelectedReturnOrder] = useState<number | null>(null);
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
     const [returnReason, setReturnReason] = useState('');
@@ -43,6 +58,7 @@ function WaiterPageContent() {
 
     const fetchOrders = async () => {
         try {
+            fetchStats();
             const res = await fetch('/api/inventory/orders/active/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
@@ -140,15 +156,15 @@ function WaiterPageContent() {
 
                 {/* Service Stats Card */}
                 <div className="bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100 shadow-sm flex-1 sm:min-w-[280px]">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Service (Waiter)</h3>
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Service Performance</h3>
                     <div className="flex justify-between items-end gap-4">
                         <div>
-                            <div className="text-xl font-black text-gray-900">$6,430.00</div>
-                            <div className="text-[10px] font-medium text-emerald-600">Total Processed</div>
+                            <div className="text-xl font-black text-gray-900">${stats?.revenue_today.toFixed(2) || '0.00'}</div>
+                            <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{stats?.processed || 0} Total Orders</div>
                         </div>
                         <div className="text-right shrink-0">
-                            <div className="text-[10px] font-bold text-gray-500">231 Served</div>
-                            <div className="text-[10px] text-gray-400">14 mins Avg</div>
+                            <div className="text-[10px] font-bold text-gray-500">{stats?.served || 0} Served Today</div>
+                            <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{stats?.avg_time || 0} mins Avg</div>
                         </div>
                     </div>
                 </div>

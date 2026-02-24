@@ -21,8 +21,23 @@ interface Order {
 export default function KitchenPage() {
     const { showNotification } = useUI();
     const [orders, setOrders] = useState<Order[]>([]);
+    const [stats, setStats] = useState<any>(null);
     const [pendingReturns, setPendingReturns] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const fetchStats = async () => {
+        try {
+            const res = await fetch('/api/inventory/reports/', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setStats(data.kitchen_stats);
+            }
+        } catch (e) { console.error(e); }
+    };
 
     const fetchReturns = async () => {
         try {
@@ -46,6 +61,7 @@ export default function KitchenPage() {
     const fetchOrders = async () => {
         try {
             fetchReturns();
+            fetchStats();
             const res = await fetch('/api/inventory/orders/active/', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
@@ -137,15 +153,15 @@ export default function KitchenPage() {
 
                     {/* Kitchen Stats Card */}
                     <div className="bg-orange-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm flex-1 sm:min-w-[280px]">
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Kitchen Revenue</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Kitchen Performance</h3>
                         <div className="flex justify-between items-end gap-4">
                             <div>
-                                <div className="text-xl font-black text-gray-900">$4,250.00</div>
-                                <div className="text-[10px] font-medium text-orange-600">+12% vs last week</div>
+                                <div className="text-xl font-black text-gray-900">${stats?.revenue_today.toFixed(2) || '0.00'}</div>
+                                <div className="text-[10px] font-black text-orange-600 uppercase tracking-widest">{stats?.served || 0} Served Today</div>
                             </div>
                             <div className="text-right shrink-0">
-                                <div className="text-[10px] font-bold text-gray-500">Club Sandwich</div>
-                                <div className="text-[10px] text-gray-400">142 Sold</div>
+                                <div className="text-[10px] font-bold text-gray-500 truncate max-w-[120px]">{stats?.top_item || 'No Sales'}</div>
+                                <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{stats?.avg_time || 0}m Avg Prep</div>
                             </div>
                         </div>
                     </div>

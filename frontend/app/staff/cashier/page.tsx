@@ -25,12 +25,13 @@ function CashierDashboardContent() {
     const [activeTab, setActiveTab] = useState<'invoices' | 'returns'>('invoices');
     const [filter, setFilter] = useState<'ALL' | 'UNPAID' | 'PAID'>('UNPAID');
     const [searchQuery, setSearchQuery] = useState('');
+    const [stats, setStats] = useState<any>(null);
     const [activeOrders, setActiveOrders] = useState<any[]>([]);
     const [activePasses, setActivePasses] = useState<any[]>([]);
 
     const fetchData = async () => {
         try {
-            const [invRes, orderRes, passRes] = await Promise.all([
+            const [invRes, orderRes, passRes, statRes] = await Promise.all([
                 fetch('/api/finance/invoices/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
@@ -45,11 +46,20 @@ function CashierDashboardContent() {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
+                }),
+                fetch('/api/inventory/reports/', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                    }
                 })
             ]);
             if (invRes.ok) setInvoices(await invRes.json());
             if (orderRes.ok) setActiveOrders(await orderRes.json());
             if (passRes.ok) setActivePasses(await passRes.json());
+            if (statRes.ok) {
+                const data = await statRes.json();
+                setStats(data.finance_stats);
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -96,12 +106,9 @@ function CashierDashboardContent() {
                         <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-sm shadow-sm">
                             <Banknote className="text-emerald-700" size={24} />
                         </div>
-                        <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-white/50 px-2 py-1 rounded-full">
-                            <ArrowUpRight size={14} /> 15% Target
-                        </div>
                     </div>
                     <div className="text-[10px] font-black text-emerald-800/60 uppercase tracking-[0.2em] mb-1">Today's Collection</div>
-                    <div className="text-2xl lg:text-3xl font-black text-gray-900">${collectedToday.toFixed(2)}</div>
+                    <div className="text-2xl lg:text-3xl font-black text-gray-900">${stats?.today_collection.toFixed(2) || '0.00'}</div>
                 </div>
 
                 <div className="bg-orange-100 p-6 rounded-[2rem] md:rounded-[2.5rem] border border-orange-200/50 shadow-sm transition-all md:hover:scale-[1.02]">
@@ -111,7 +118,7 @@ function CashierDashboardContent() {
                         </div>
                     </div>
                     <div className="text-[10px] font-black text-orange-800/60 uppercase tracking-[0.2em] mb-1">Pending Invoices</div>
-                    <div className="text-2xl lg:text-3xl font-black text-gray-900">${pendingTotal.toFixed(2)}</div>
+                    <div className="text-2xl lg:text-3xl font-black text-gray-900">${stats?.pending_invoices.toFixed(2) || '0.00'}</div>
                 </div>
 
                 <div className="bg-blue-100 p-6 rounded-[2rem] md:rounded-[2.5rem] border border-blue-200/50 shadow-sm transition-all md:hover:scale-[1.02]">
