@@ -121,12 +121,20 @@ export default function MenuManagementPage() {
                         </h1>
                         <p className="text-gray-500 font-medium tracking-tight text-sm">Create and manage your restaurant and bar offerings.</p>
                     </div>
-                    <Link
-                        href="/staff/menu/new"
-                        className="w-full xl:w-auto bg-gray-900 text-white px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] transition-all shadow-lg shadow-gray-200"
-                    >
-                        <Plus size={18} /> Add New Item
-                    </Link>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
+                        <Link
+                            href="/staff/menu/categories"
+                            className="px-6 py-4 bg-white border-2 border-gray-100 text-gray-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:border-orange-500 hover:text-orange-600 transition-all flex items-center justify-center gap-2 shadow-sm"
+                        >
+                            <Filter size={18} /> Categories
+                        </Link>
+                        <Link
+                            href="/staff/menu/new"
+                            className="px-8 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-orange-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-gray-200"
+                        >
+                            <Plus size={18} /> Add New Item
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Filters & Search */}
