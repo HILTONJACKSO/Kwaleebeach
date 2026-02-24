@@ -139,11 +139,22 @@ systemctl enable nextjs-kwalee
 systemctl restart nextjs-kwalee
 
 # 7. Configure Nginx
-echo "Configuring Nginx..."
+echo "Configuring Nginx with SSL..."
 cat <<EOF > /etc/nginx/sites-available/kwalee
 server {
     listen 80;
     server_name ${DOMAIN} www.${DOMAIN};
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name ${DOMAIN} www.${DOMAIN};
+
+    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
     location / {
         proxy_pass http://127.0.0.1:$NEXTJS_PORT;
