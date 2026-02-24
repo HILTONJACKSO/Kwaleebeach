@@ -206,7 +206,7 @@ export default function PoolPage() {
                     <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3 flex-wrap">
                         Pool Management <Waves className="text-cyan-500" size={32} />
                     </h1>
-                    <p className="text-gray-500 font-medium tracking-tight text-sm">Verify hotel guests or sell day passes.</p>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Verify hotel guests or sell pool access passes.</p>
                 </div>
 
                 {/* KPI Cards */}
@@ -242,7 +242,7 @@ export default function PoolPage() {
                     className={`pb-4 px-4 text-xs md:text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'sell' ? 'border-b-4 border-emerald-500 text-emerald-600' : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
-                    Day Pass
+                    Pool Access
                 </button>
                 <button
                     onClick={() => setActiveTab('special')}
@@ -296,7 +296,7 @@ export default function PoolPage() {
                 ) : activeTab === 'sell' ? (
                     <div className="card bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border border-gray-100">
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                            <Ticket className="text-emerald-500" /> Issue Day Pass
+                            <Ticket className="text-emerald-500" /> Issue Pool Access
                         </h2>
                         <div className="space-y-4">
                             {passTypes.length > 0 ? (
@@ -375,7 +375,7 @@ export default function PoolPage() {
                     <h3 className="text-2xl font-black mb-4">Pool Rules</h3>
                     <ul className="space-y-3 text-cyan-100 font-medium">
                         <li className="flex items-center gap-3"><CheckCircle size={16} /> Hotel guests access is free.</li>
-                        <li className="flex items-center gap-3"><CheckCircle size={16} /> Day passes expire at 8:00 PM.</li>
+                        <li className="flex items-center gap-3"><CheckCircle size={16} /> Pool access passes expire at 8:00 PM.</li>
                         <li className="flex items-center gap-3"><CheckCircle size={16} /> Max capacity: 45 people.</li>
                     </ul>
                 </div>

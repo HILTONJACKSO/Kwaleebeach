@@ -9,8 +9,8 @@ from recreation.models import PassType
 
 def populate_passes():
     passes = [
-        {"name": "Adult Pool Pass", "price": 2.00, "location": "POOL"},
-        {"name": "Kid Pool Pass", "price": 1.00, "location": "POOL"},
+        {"name": "Pool Access (Teens/Adult)", "price": 5.00, "location": "POOL"},
+        {"name": "Pool Access (Kid)", "price": 3.00, "location": "POOL"},
         {"name": "Adult Beach Pass", "price": 2.00, "location": "BEACH"},
         {"name": "Kid Beach Pass", "price": 1.00, "location": "BEACH"},
     ]
