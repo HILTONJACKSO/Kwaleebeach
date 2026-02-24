@@ -46,12 +46,12 @@ export default function MenuManagementPage() {
             const [itemRes, catRes] = await Promise.all([
                 fetch('/api/inventory/menu/items/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 }),
                 fetch('/api/inventory/menu/categories/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 })
             ]);
@@ -72,7 +72,7 @@ export default function MenuManagementPage() {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({ is_available: !item.is_available })
             });
@@ -91,7 +91,7 @@ export default function MenuManagementPage() {
             const res = await fetch(`/api/inventory/menu/items/${id}/`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.status === 204) {

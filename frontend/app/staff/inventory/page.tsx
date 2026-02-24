@@ -53,7 +53,7 @@ function InventoryPageContent() {
         try {
             const res = await fetch('/api/inventory/items/', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {

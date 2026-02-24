@@ -32,7 +32,7 @@ export default function TransferInventoryPage() {
     useEffect(() => {
         fetch('/api/inventory/items/', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
             .then(res => res.json())
@@ -52,7 +52,7 @@ export default function TransferInventoryPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify(transferData)
             });

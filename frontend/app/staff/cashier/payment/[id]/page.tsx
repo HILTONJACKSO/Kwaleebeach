@@ -17,7 +17,7 @@ export default function CashierPaymentPage() {
     useEffect(() => {
         fetch(`/api/finance/invoices/${invoiceId}/`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
             .then(res => res.json())
@@ -33,7 +33,7 @@ export default function CashierPaymentPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({
                     mode: paymentMethod,

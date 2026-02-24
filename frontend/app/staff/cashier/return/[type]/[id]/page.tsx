@@ -29,7 +29,7 @@ export default function CashierReturnPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({ reason })
             });

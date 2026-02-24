@@ -32,12 +32,12 @@ export default function ReturnsPage() {
             const [orderRes, passRes] = await Promise.all([
                 fetch('/api/inventory/returns/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 }),
                 fetch('/api/recreation/returns/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 })
             ]);
@@ -61,7 +61,7 @@ export default function ReturnsPage() {
             const res = await fetch(`/api/inventory/returns/${id}/${endpoint}/`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -78,7 +78,7 @@ export default function ReturnsPage() {
             const res = await fetch(`/api/recreation/returns/${id}/approve/`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {

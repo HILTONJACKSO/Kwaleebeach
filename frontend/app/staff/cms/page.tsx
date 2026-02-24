@@ -45,7 +45,7 @@ function CMSContent() {
         try {
             const res = await fetch('/api/website/config/', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -71,7 +71,7 @@ function CMSContent() {
     const saveChanges = async () => {
         setSaving(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('yarvo_token');
             const promises = configs.map(config =>
                 fetch(`/api/website/config/${config.key}/`, {
                     method: 'PATCH',

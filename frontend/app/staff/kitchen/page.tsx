@@ -28,7 +28,7 @@ export default function KitchenPage() {
         try {
             const res = await fetch('/api/inventory/order-returns/', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -48,7 +48,7 @@ export default function KitchenPage() {
             fetchReturns();
             const res = await fetch('/api/inventory/orders/active/', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -71,7 +71,7 @@ export default function KitchenPage() {
             const res = await fetch(`/api/inventory/order-returns/${id}/approve_station/`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -95,7 +95,7 @@ export default function KitchenPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({ status })
             });

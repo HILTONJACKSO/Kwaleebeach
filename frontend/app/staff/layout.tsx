@@ -34,7 +34,7 @@ export default function StaffLayout({
             try {
                 const res = await fetch(`/api/pms/search/?q=${searchQuery}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 });
                 if (res.ok) {

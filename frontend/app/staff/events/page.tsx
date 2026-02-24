@@ -34,7 +34,7 @@ function StaffEventsPageContent() {
             try {
                 const res = await fetch('/api/recreation/events/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 });
                 if (res.ok) {

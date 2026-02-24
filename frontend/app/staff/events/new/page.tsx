@@ -56,7 +56,7 @@ export default function NewEventPage() {
             const res = await fetch('/api/recreation/events/', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: formData,
             });

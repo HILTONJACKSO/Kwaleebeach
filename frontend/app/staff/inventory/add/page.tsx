@@ -28,7 +28,7 @@ export default function AddInventoryItemPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({
                     name: newItem.name,
@@ -47,7 +47,7 @@ export default function AddInventoryItemPage() {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                         },
                         body: JSON.stringify({
                             item: createdItem.id,

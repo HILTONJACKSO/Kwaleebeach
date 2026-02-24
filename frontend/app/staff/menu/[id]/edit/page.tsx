@@ -44,7 +44,7 @@ export default function EditMenuItemPage() {
         try {
             const res = await fetch('/api/inventory/menu/categories/', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -59,7 +59,7 @@ export default function EditMenuItemPage() {
         try {
             const res = await fetch(`/api/inventory/menu/items/${id}/`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -113,7 +113,7 @@ export default function EditMenuItemPage() {
             const res = await fetch(`/api/inventory/menu/items/${id}/`, {
                 method: 'PATCH',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: data
             });

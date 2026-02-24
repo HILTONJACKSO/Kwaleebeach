@@ -23,7 +23,7 @@ export default function CategoryManagementPage() {
         try {
             const res = await fetch('/api/inventory/menu/categories/', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -59,7 +59,7 @@ export default function CategoryManagementPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify({ name: newName, slug })
             });
@@ -86,7 +86,7 @@ export default function CategoryManagementPage() {
             const res = await fetch(`/api/inventory/menu/categories/${cat.id}/`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
 

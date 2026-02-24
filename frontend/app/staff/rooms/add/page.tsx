@@ -52,7 +52,7 @@ export default function AddRoomPage() {
             const res = await fetch('/api/pms/rooms/', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: formData,
                 // Do not set Content-Type, browser will set it with boundary for FormData

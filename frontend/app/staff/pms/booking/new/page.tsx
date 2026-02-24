@@ -26,7 +26,7 @@ export default function NewBookingPage() {
         // Fetch available rooms
         fetch('/api/pms/rooms/', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
             .then(res => res.json())
@@ -42,7 +42,7 @@ export default function NewBookingPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify(bookingData)
             });

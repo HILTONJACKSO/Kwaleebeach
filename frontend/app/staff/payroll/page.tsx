@@ -34,12 +34,12 @@ function PayrollDashboardContent() {
                 const [salRes, vouRes] = await Promise.all([
                     fetch('/api/finance/salaries/', {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                         }
                     }),
                     fetch('/api/finance/vouchers/', {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                         }
                     })
                 ]);

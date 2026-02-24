@@ -32,12 +32,12 @@ function FinanceDashboardContent() {
                 const [accRes, txRes] = await Promise.all([
                     fetch('/api/finance/accounts/', {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                         }
                     }),
                     fetch('/api/finance/transactions/', {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                         }
                     })
                 ]);

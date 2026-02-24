@@ -33,17 +33,17 @@ function CashierDashboardContent() {
             const [invRes, orderRes, passRes] = await Promise.all([
                 fetch('/api/finance/invoices/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 }),
                 fetch('/api/inventory/orders/active/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 }),
                 fetch('/api/recreation/passes/', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 })
             ]);

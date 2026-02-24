@@ -31,7 +31,7 @@ export default function EditEventPage() {
             try {
                 const res = await fetch(`/api/recreation/events/${id}/`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 });
                 if (res.ok) {
@@ -91,7 +91,7 @@ export default function EditEventPage() {
             const res = await fetch(`/api/recreation/events/${id}/`, {
                 method: 'PATCH',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: formData
             });

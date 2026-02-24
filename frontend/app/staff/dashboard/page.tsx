@@ -44,7 +44,7 @@ export default function StaffDashboard() {
         // Fetch real dashboard stats
         fetch('/api/inventory/reports/', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
             .then(res => res.json())

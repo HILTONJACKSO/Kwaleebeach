@@ -29,7 +29,7 @@ export default function EditRoomPage() {
             try {
                 const res = await fetch(`/api/pms/rooms/${id}/`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 });
                 if (res.ok) {
@@ -91,7 +91,7 @@ export default function EditRoomPage() {
             const res = await fetch(`/api/pms/rooms/${id}/`, {
                 method: 'PATCH',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: formData,
             });

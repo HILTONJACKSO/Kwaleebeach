@@ -38,7 +38,7 @@ export default function AddMenuItemPage() {
         try {
             const res = await fetch('/api/inventory/menu/categories/', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
             });
             if (res.ok) {
@@ -82,7 +82,7 @@ export default function AddMenuItemPage() {
             const res = await fetch('/api/inventory/menu/items/', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 // Note: Don't set Content-Type header when using FormData, browser will set it with boundary
                 body: data

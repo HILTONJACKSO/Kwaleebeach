@@ -24,7 +24,7 @@ export default function EditInventoryItemPage() {
             try {
                 const res = await fetch(`/api/inventory/items/${id}/`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                     }
                 });
                 if (res.ok) {
@@ -56,7 +56,7 @@ export default function EditInventoryItemPage() {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
                 body: JSON.stringify(itemData)
             });
