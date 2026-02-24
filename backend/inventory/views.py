@@ -70,6 +70,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         if room:
             queryset = queryset.filter(room=room)
         serializer = self.get_serializer(queryset, many=True)
+        print(f"DEBUG: Active Orders JSON: {serializer.data}")
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='update-status')
