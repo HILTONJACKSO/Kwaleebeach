@@ -42,7 +42,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MenuItem
-        fields = ['id', 'category', 'category_name', 'name', 'description', 'price', 'image', 'is_available']
+        fields = ['id', 'category', 'category_name', 'name', 'description', 'price', 'image', 'is_available', 'preparation_station']
 
 class OrderItemSerializer(serializers.ModelSerializer):
     menu_item_name = serializers.CharField(source='menu_item.name', read_only=True)

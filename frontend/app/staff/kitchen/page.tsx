@@ -1,12 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useUI } from '@/context/UIContext';
-import { Clock, CheckCircle, Play, Utensils, MapPin, Hash, Sparkles } from 'lucide-react';
+import { Clock, CheckCircle, Play, Utensils, MapPin, Hash, Sparkles, ShieldAlert } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 interface OrderItem {
     id: number;
     menu_item_name: string;
+    preparation_station: string;
     quantity: number;
 }
 
@@ -24,6 +25,7 @@ export default function KitchenPage() {
     const [stats, setStats] = useState<any>(null);
     const [pendingReturns, setPendingReturns] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchStats = async () => {
         try {
@@ -36,7 +38,10 @@ export default function KitchenPage() {
                 const data = await res.json();
                 setStats(data.kitchen_stats);
             }
-        } catch (e) { console.error(e); }
+        } catch (e: any) {
+            console.error(e);
+            setError(`Stats Sync Error: ${e.message}`);
+        }
     };
 
     const fetchReturns = async () => {
@@ -55,7 +60,10 @@ export default function KitchenPage() {
                 );
                 setPendingReturns(requested);
             }
-        } catch (e) { console.error(e); }
+        } catch (e: any) {
+            console.error(e);
+            setError(`Returns Sync Error: ${e.message}`);
+        }
     };
 
     const fetchOrders = async () => {
@@ -77,8 +85,14 @@ export default function KitchenPage() {
                     items: order.items.filter((item: any) => item.preparation_station === 'KITCHEN')
                 }));
                 setOrders(kitchenOrders);
+                setError(null);
+            } else {
+                setError(`API Error: ${res.status} ${res.statusText}`);
             }
-        } catch (e) { console.error(e); }
+        } catch (e: any) {
+            console.error(e);
+            setError(`Network Error: ${e.message}`);
+        }
         finally { setLoading(false); }
     };
 
@@ -135,6 +149,14 @@ export default function KitchenPage() {
 
     return (
         <div className="space-y-8">
+            {/* Error Banner */}
+            {error && (
+                <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-center gap-3 text-red-600 animate-in fade-in slide-in-from-top-4">
+                    <ShieldAlert size={20} />
+                    <p className="text-sm font-bold">System Sync Alert: {error}</p>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
                 <div className="flex-1">
