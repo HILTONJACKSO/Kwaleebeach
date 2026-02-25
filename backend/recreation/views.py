@@ -22,6 +22,32 @@ class PassReturnViewSet(viewsets.ModelViewSet):
     queryset = PassReturn.objects.all().order_by('-requested_at')
     serializer_class = PassReturnSerializer
 
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        ret = self.get_object()
+        ret.status = 'APPROVED_ADMIN'
+        ret.save()
+        
+        # Mark pass as cancelled
+        ret.access_pass.status = 'CANCELLED'
+        ret.access_pass.save()
+        
+        return Response({'status': 'Approved'})
+
+    @action(detail=False, methods=['get'])
+    def history(self, request):
+        days = request.query_params.get('days', None)
+        queryset = self.get_queryset().exclude(status='REQUESTED')
+        
+        if days:
+            from django.utils import timezone
+            from datetime import timedelta
+            start_date = timezone.now() - timedelta(days=int(days))
+            queryset = queryset.filter(requested_at__gte=start_date)
+            
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
@@ -37,12 +63,7 @@ class CSRProjectViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CSRProjectSerializer
     permission_classes = [permissions.AllowAny]
 
-    @action(detail=True, methods=['post'])
-    def approve(self, request, pk=None):
-        ret = self.get_object()
-        ret.status = 'APPROVED_ADMIN'
-        ret.save()
-        return Response({'status': 'Approved'})
+    pass
 
 class AccessPassViewSet(viewsets.ModelViewSet):
     queryset = AccessPass.objects.all()

@@ -121,6 +121,20 @@ class OrderReturnViewSet(viewsets.ModelViewSet):
         
         return Response({'status': 'Final approved'})
 
+    @action(detail=False, methods=['get'])
+    def history(self, request):
+        days = request.query_params.get('days', None)
+        queryset = self.get_queryset().exclude(status='REQUESTED').exclude(status='APPROVED_STATION')
+        
+        if days:
+            from django.utils import timezone
+            from datetime import timedelta
+            start_date = timezone.now() - timedelta(days=int(days))
+            queryset = queryset.filter(requested_at__gte=start_date)
+            
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 class MenuCategoryViewSet(viewsets.ModelViewSet):
     queryset = MenuCategory.objects.all()
     serializer_class = MenuCategorySerializer

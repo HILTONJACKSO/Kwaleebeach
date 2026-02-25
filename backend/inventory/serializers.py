@@ -59,9 +59,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
         read_only_fields = ['price_at_time']
 
 class OrderReturnSerializer(serializers.ModelSerializer):
+    order_total = serializers.DecimalField(source='order.total_amount', max_digits=12, decimal_places=2, read_only=True)
+    room = serializers.CharField(source='order.room', read_only=True)
+    items_summary = serializers.SerializerMethodField()
+
     class Meta:
         model = OrderReturn
         fields = '__all__'
+
+    def get_items_summary(self, obj):
+        return ", ".join([f"{i.quantity}x {i.menu_item.name}" for i in obj.order.items.all()])
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)

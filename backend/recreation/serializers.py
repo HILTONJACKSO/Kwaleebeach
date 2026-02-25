@@ -7,6 +7,10 @@ class PassTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PassReturnSerializer(serializers.ModelSerializer):
+    pass_type_name = serializers.CharField(source='access_pass.pass_type.name', read_only=True)
+    guest_name = serializers.CharField(source='access_pass.guest_name', read_only=True)
+    amount_paid = serializers.DecimalField(source='access_pass.amount_paid', max_digits=10, decimal_places=2, read_only=True)
+
     class Meta:
         model = PassReturn
         fields = '__all__'
