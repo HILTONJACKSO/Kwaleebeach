@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     MenuCategoryViewSet, MenuItemViewSet, 
     InventoryItemViewSet, InventoryStockViewSet, StockTransferViewSet,
-    OrderViewSet, OrderReturnViewSet
+    OrderViewSet, OrderReturnViewSet, RestaurantTableViewSet
 )
 from .reporting_views import ReportingViewSet
 
@@ -15,6 +15,7 @@ router.register(r'orders', OrderViewSet, basename='order')
 router.register(r'returns', OrderReturnViewSet, basename='order-return')
 router.register(r'menu/categories', MenuCategoryViewSet, basename='menu-category')
 router.register(r'menu/items', MenuItemViewSet, basename='menu-item')
+router.register(r'tables', RestaurantTableViewSet, basename='restaurant-table')
 
 urlpatterns = [
     path('', include(router.urls)),

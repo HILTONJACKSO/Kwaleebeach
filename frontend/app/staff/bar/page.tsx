@@ -15,6 +15,7 @@ interface OrderItem {
 interface Order {
     id: number;
     room: string;
+    location_type: string;
     status: string;
     created_at: string;
     items: OrderItem[];
@@ -221,9 +222,9 @@ export default function BarPage() {
                                         {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-gray-500 text-sm font-bold">
+                                <div className="flex items-center gap-2 text-gray-500 text-sm font-bold truncate">
                                     <MapPin size={16} className="text-blue-500" />
-                                    <span>{order.room}</span>
+                                    <span>{order.location_type === 'WALK_IN' ? 'Walk-in' : order.room}</span>
                                 </div>
                             </div>
 

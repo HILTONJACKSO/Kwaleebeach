@@ -148,6 +148,7 @@ function WaiterPageContent() {
             case 'TABLE': return 'Restaurant Table';
             case 'POOL': return 'Poolside';
             case 'BEACH': return 'Beachside';
+            case 'WALK_IN': return 'Walk-in';
             default: return 'Location';
         }
     };

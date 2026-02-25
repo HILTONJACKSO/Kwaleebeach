@@ -7,6 +7,13 @@ class MenuCategory(models.Model):
     def __str__(self):
         return self.name
 
+class RestaurantTable(models.Model):
+    number = models.CharField(max_length=20, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Table {self.number}"
+
 class MenuItem(models.Model):
     STATION_CHOICES = [
         ('KITCHEN', 'Kitchen'),
@@ -79,6 +86,7 @@ class Order(models.Model):
         ('TABLE', 'Table'),
         ('BEACH', 'Beach Side'),
         ('POOL', 'Pool Side'),
+        ('WALK_IN', 'Walk-in'),
     ]
     
     room = models.CharField(max_length=50, blank=True, null=True, help_text="Number/ID (Room #, Table #, etc.)")

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import {
     Plus, Search, Edit2, Trash2, Check, X,
     Image as ImageIcon, DollarSign, FileText,
-    ChevronRight, Filter, MoreVertical, Utensils
+    ChevronRight, Filter, MoreVertical, Utensils, Table as TableIcon
 } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -127,6 +127,12 @@ export default function MenuManagementPage() {
                             className="px-6 py-4 bg-white border-2 border-gray-100 text-gray-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:border-orange-500 hover:text-orange-600 transition-all flex items-center justify-center gap-2 shadow-sm"
                         >
                             <Filter size={18} /> Categories
+                        </Link>
+                        <Link
+                            href="/staff/menu/tables"
+                            className="px-6 py-4 bg-white border-2 border-gray-100 text-gray-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:border-emerald-500 hover:text-emerald-600 transition-all flex items-center justify-center gap-2 shadow-sm"
+                        >
+                            <TableIcon size={18} /> Tables
                         </Link>
                         <Link
                             href="/staff/menu/new"

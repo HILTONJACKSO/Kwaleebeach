@@ -218,7 +218,9 @@ function CashierDashboardContent() {
                                         <td className="px-6 md:px-8 py-6">
                                             <div className="flex flex-col">
                                                 <span className="font-bold text-gray-900 text-sm truncate">{invoice.guest_name}</span>
-                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Room {invoice.room_number}</span>
+                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                                    {invoice.reference_location || `Room ${invoice.room_number}`}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 md:px-8 py-6 text-right sm:text-left">

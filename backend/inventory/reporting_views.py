@@ -112,7 +112,7 @@ class ReportingViewSet(viewsets.ViewSet):
         for order in recent_orders:
             recent_log.append({
                 'id': order.id,
-                'room': f"Room {order.room}" if order.room else "Counter/Table",
+                'room': f"{order.get_location_type_display()} {order.room}" if order.room and order.room != 'Walk-in' else "Walk-in",
                 'status': order.status,
                 'total_amount': str(order.total_amount),
                 'created_at': order.created_at.isoformat()

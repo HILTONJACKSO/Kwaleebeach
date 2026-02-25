@@ -260,9 +260,9 @@ export default function KitchenPage() {
                                         {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-gray-500 text-sm font-bold">
+                                <div className="flex items-center gap-2 text-gray-500 text-sm font-bold truncate">
                                     <MapPin size={16} className="text-[var(--color-primary)]" />
-                                    <span>{order.room}</span>
+                                    <span>{order.location_type === 'WALK_IN' ? 'Walk-in' : order.room}</span>
                                 </div>
                             </div>
 

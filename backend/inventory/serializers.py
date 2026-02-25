@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MenuCategory, MenuItem, Order, OrderItem, InventoryItem, InventoryStock, StockTransfer, OrderReturn
+from .models import MenuCategory, MenuItem, Order, OrderItem, InventoryItem, InventoryStock, StockTransfer, OrderReturn, RestaurantTable
 from finance.models import Invoice, InvoiceItem
 from pms.models import Booking
 import uuid
@@ -36,6 +36,11 @@ class MenuCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuCategory
         fields = ['id', 'name', 'slug']
+
+class RestaurantTableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RestaurantTable
+        fields = ['id', 'number', 'is_active']
 
 class MenuItemSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -98,6 +103,7 @@ class OrderSerializer(serializers.ModelSerializer):
                 
                 invoice = Invoice.objects.create(
                     booking=active_booking,
+                    reference_location=f"{order.get_location_type_display()} {order.room}" if order.room and order.room != 'Walk-in' else "Walk-in",
                     invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
                     total_ht=total,
                     total_ft=total,

@@ -23,7 +23,8 @@ import {
     Landmark,
     Banknote,
     FileText,
-    PieChart
+    PieChart,
+    Table
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
@@ -56,6 +57,7 @@ export default function StaffSidebar({ isMobileOpen, onClose }: StaffSidebarProp
         { name: 'Analytics', href: '/staff/analytics', icon: <PieChart size={20} />, roles: ['ADMIN'] },
         { name: 'Staff', href: '/staff/users', icon: <Users size={20} />, roles: ['ADMIN'] },
         { name: 'Menu Mgmt', href: '/staff/menu', icon: <UtensilsCrossed size={20} />, roles: ['ADMIN'] },
+        { name: 'Table Mgmt', href: '/staff/menu/tables', icon: <Table size={20} />, roles: ['ADMIN'] },
         { name: 'Website CMS', href: '/staff/cms', icon: <Layout size={20} />, roles: ['ADMIN'] },
     ];
 

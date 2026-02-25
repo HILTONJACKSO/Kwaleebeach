@@ -2,10 +2,11 @@ from rest_framework import generics, status, viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
-from .models import MenuCategory, MenuItem, Order, InventoryItem, InventoryStock, StockTransfer, Department, OrderReturn
+from .models import MenuCategory, MenuItem, Order, InventoryItem, InventoryStock, StockTransfer, Department, OrderReturn, RestaurantTable
 from .serializers import (
     MenuCategorySerializer, MenuItemSerializer, OrderSerializer,
-    InventoryItemSerializer, InventoryStockSerializer, StockTransferSerializer, OrderReturnSerializer
+    InventoryItemSerializer, InventoryStockSerializer, StockTransferSerializer, OrderReturnSerializer,
+    RestaurantTableSerializer
 )
 from django.db import transaction
 
@@ -137,3 +138,8 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
         return queryset
+
+class RestaurantTableViewSet(viewsets.ModelViewSet):
+    queryset = RestaurantTable.objects.all()
+    serializer_class = RestaurantTableSerializer
+    permission_classes = [permissions.AllowAny]

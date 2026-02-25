@@ -56,6 +56,7 @@ class Voucher(models.Model):
 
 class Invoice(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
+    reference_location = models.CharField(max_length=100, blank=True, null=True, help_text="Direct room/table reference if no booking (e.g. Table T5)")
     invoice_number = models.CharField(max_length=50, unique=True)
     date_issued = models.DateField(auto_now_add=True)
     
