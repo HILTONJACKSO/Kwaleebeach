@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUI } from '@/context/UIContext';
-import { DollarSign, CreditCard, Banknote, User, Save, Hash, ArrowUpRight } from 'lucide-react';
+import { DollarSign, CreditCard, Banknote, User, Save, Hash, ArrowUpRight, Smartphone } from 'lucide-react';
 import FormPageLayout from '@/components/FormPageLayout';
 
 export default function CashierPaymentPage() {
@@ -197,6 +197,26 @@ export default function CashierPaymentPage() {
                                 >
                                     <CreditCard size={24} />
                                     <span className="text-xs font-black uppercase tracking-widest">Visa/Card</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPaymentMethod('MOMO_LONESTAR')}
+                                    className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'MOMO_LONESTAR'
+                                        ? 'border-yellow-500 bg-yellow-50 text-yellow-700'
+                                        : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'}`}
+                                >
+                                    <Smartphone size={24} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Momo Lonestar</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPaymentMethod('MOMO_ORANGE')}
+                                    className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'MOMO_ORANGE'
+                                        ? 'border-orange-600 bg-orange-50 text-orange-700'
+                                        : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'}`}
+                                >
+                                    <Smartphone size={24} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Momo Orange</span>
                                 </button>
                             </div>
                         </div>

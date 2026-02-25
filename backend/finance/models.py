@@ -111,7 +111,8 @@ class InvoiceItem(models.Model):
 class Payment(models.Model):
     MODE_CHOICES = [
         ('CASH', 'Cash'),
-        ('MOMO', 'Mobile Money'),
+        ('MOMO_LONESTAR', 'Momo Lonestar'),
+        ('MOMO_ORANGE', 'Momo Orange'),
         ('VISA', 'Visa'),
         ('OTHER', 'Other'),
     ]
