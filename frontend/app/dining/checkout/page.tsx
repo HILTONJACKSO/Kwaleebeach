@@ -2,7 +2,7 @@
 import { useCart } from '@/context/CartContext';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bed, Utensils, Walking, ChevronRight, CheckCircle, MapPin, Hash } from 'lucide-react';
+import { Bed, Utensils, ChevronRight, CheckCircle, MapPin, Hash } from 'lucide-react';
 
 interface Room {
     id: number;
