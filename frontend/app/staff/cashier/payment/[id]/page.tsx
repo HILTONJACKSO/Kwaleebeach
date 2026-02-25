@@ -116,7 +116,7 @@ export default function CashierPaymentPage() {
             title={step === 'REVIEW' ? 'Review & Discount' : 'Select Payment Method'}
             subtitle="Financial Reconciliation"
             description={step === 'REVIEW' ? "Review the invoice items and apply any necessary discounts before proceeding to payment." : "Select the guest's preferred payment method and authorize the transaction."}
-            backLink={step === 'PAYMENT' ? undefined : "/staff/cashier"}
+            backLink="/staff/cashier"
             illustration={illustration}
         >
             <div className="space-y-6">
