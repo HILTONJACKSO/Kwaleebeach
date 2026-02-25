@@ -14,6 +14,7 @@ interface OrderItem {
 interface Order {
     id: number;
     room: string;
+    location_type: string;
     status: string;
     created_at: string;
     items: OrderItem[];
