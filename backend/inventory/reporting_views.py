@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum, Count, F, ExpressionWrapper, DurationField, Avg
@@ -9,6 +9,7 @@ from pms.models import Room, Booking
 from finance.models import Invoice, Payment
 
 class ReportingViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
     
     @action(detail=False, methods=['get'])
     def stats(self, request):

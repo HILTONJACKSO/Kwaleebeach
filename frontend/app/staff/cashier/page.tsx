@@ -29,30 +29,31 @@ function CashierDashboardContent() {
     const [activeOrders, setActiveOrders] = useState<any[]>([]);
     const [activePasses, setActivePasses] = useState<any[]>([]);
 
+    const getAuthHeaders = (): Record<string, string> => {
+        const token = localStorage.getItem('yarvo_token');
+        if (!token || token === 'undefined' || token === 'null') return {};
+        return { 'Authorization': `Bearer ${token}` };
+    };
+
+    const handle401 = () => {
+        localStorage.removeItem('yarvo_token');
+        window.location.href = '/login';
+    };
+
     const fetchData = async () => {
         try {
+            const authHeaders = getAuthHeaders();
             const [invRes, orderRes, passRes, statRes] = await Promise.all([
-                fetch('/api/finance/invoices/', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                    }
-                }),
-                fetch('/api/inventory/orders/active/', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                    }
-                }),
-                fetch('/api/recreation/passes/', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                    }
-                }),
-                fetch('/api/inventory/reports/', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                    }
-                })
+                fetch('/api/finance/invoices/', { headers: authHeaders }),
+                fetch('/api/inventory/orders/active/', { headers: authHeaders }),
+                fetch('/api/recreation/passes/', { headers: authHeaders }),
+                fetch('/api/inventory/reports/', { headers: authHeaders })
             ]);
+
+            if (invRes.status === 401 || orderRes.status === 401 || passRes.status === 401 || statRes.status === 401) {
+                return handle401();
+            }
+
             if (invRes.ok) setInvoices(await invRes.json());
             if (orderRes.ok) setActiveOrders(await orderRes.json());
             if (passRes.ok) setActivePasses(await passRes.json());

@@ -27,13 +27,23 @@ export default function KitchenPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const getAuthHeaders = (): Record<string, string> => {
+        const token = localStorage.getItem('yarvo_token');
+        if (!token || token === 'undefined' || token === 'null') return {};
+        return { 'Authorization': `Bearer ${token}` };
+    };
+
+    const handle401 = () => {
+        localStorage.removeItem('yarvo_token');
+        window.location.href = '/login';
+    };
+
     const fetchStats = async () => {
         try {
             const res = await fetch('/api/inventory/reports/', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                }
+                headers: getAuthHeaders()
             });
+            if (res.status === 401) return handle401();
             if (res.ok) {
                 const data = await res.json();
                 setStats(data.kitchen_stats);
@@ -47,10 +57,9 @@ export default function KitchenPage() {
     const fetchReturns = async () => {
         try {
             const res = await fetch('/api/inventory/order-returns/', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                }
+                headers: getAuthHeaders()
             });
+            if (res.status === 401) return handle401();
             if (res.ok) {
                 const data = await res.json();
                 // Filter for requested returns that have at least one kitchen item
@@ -71,10 +80,9 @@ export default function KitchenPage() {
             fetchReturns();
             fetchStats();
             const res = await fetch('/api/inventory/orders/active/', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                }
+                headers: getAuthHeaders()
             });
+            if (res.status === 401) return handle401();
             if (res.ok) {
                 const data: Order[] = await res.json();
                 // Filter orders to only include those with KITCHEN items
