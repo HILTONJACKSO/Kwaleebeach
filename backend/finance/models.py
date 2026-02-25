@@ -65,7 +65,34 @@ class Invoice(models.Model):
     total_ft = models.DecimalField(max_digits=12, decimal_places=2, help_text="Total Final Tax (Incl Tax)")
     balance_ptd = models.DecimalField(max_digits=12, decimal_places=2, help_text="Balance Period To Date")
     
+    # Discounts
+    DISCOUNT_TYPE_CHOICES = [
+        ('FIXED', 'Fixed Amount ($)'),
+        ('PERCENT', 'Percentage (%)'),
+    ]
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES, blank=True, null=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_reason = models.TextField(blank=True, null=True)
+
     is_paid = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        # Calculate HT from items total if not set, or just ensure HT/FT consistency
+        # For simplicity, if discount is applied, update total_ft
+        if self.discount_amount > 0:
+            if self.discount_type == 'PERCENT':
+                discount_val = (self.total_ht * self.discount_amount) / 100
+                self.total_ft = self.total_ht - discount_val
+            elif self.discount_type == 'FIXED':
+                self.total_ft = self.total_ht - self.discount_amount
+        else:
+            self.total_ft = self.total_ht
+            
+        # Balance is usually what's left to pay
+        # If paid, balance_ptd should be 0, but usually it tracks total due in this context
+        self.balance_ptd = self.total_ft
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Invoice {self.invoice_number}"

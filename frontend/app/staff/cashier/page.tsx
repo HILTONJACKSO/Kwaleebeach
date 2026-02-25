@@ -203,56 +203,129 @@ function CashierDashboardContent() {
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {filteredInvoices.map(invoice => (
-                                    <tr key={invoice.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 md:px-8 py-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 shrink-0">
-                                                    <FileText size={20} />
+                                    <>
+                                        <tr key={invoice.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 md:px-8 py-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 shrink-0">
+                                                        <FileText size={20} />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="font-bold text-gray-900 truncate">#{invoice.invoice_number}</div>
+                                                        <div className="text-[10px] text-gray-400 font-medium">{invoice.date_issued}</div>
+                                                    </div>
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <div className="font-bold text-gray-900 truncate">#{invoice.invoice_number}</div>
-                                                    <div className="text-[10px] text-gray-400 font-medium">{invoice.date_issued}</div>
+                                            </td>
+                                            <td className="px-6 md:px-8 py-6">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-gray-900 text-sm truncate">{invoice.guest_name}</span>
+                                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                                        {invoice.reference_location || `Room ${invoice.room_number}`}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 md:px-8 py-6">
-                                            <div className="flex flex-col">
-                                                <span className="font-bold text-gray-900 text-sm truncate">{invoice.guest_name}</span>
-                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
-                                                    {invoice.reference_location || `Room ${invoice.room_number}`}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 md:px-8 py-6 text-right sm:text-left">
-                                            <div className="text-lg font-black text-gray-900">${parseFloat(invoice.total_ft).toFixed(2)}</div>
-                                            {!invoice.is_paid && <div className="sm:hidden text-[9px] font-bold text-orange-500 uppercase tracking-wider">Unpaid</div>}
-                                        </td>
-                                        <td className="px-6 md:px-8 py-6 hidden sm:table-cell">
-                                            {invoice.is_paid ? (
-                                                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 flex items-center gap-1.5 w-fit">
-                                                    <CheckCircle size={12} /> PAID
-                                                </span>
-                                            ) : (
-                                                <span className="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-orange-100 flex items-center gap-1.5 w-fit">
-                                                    <Clock size={12} /> UNPAID
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 md:px-8 py-6 text-right">
-                                            {invoice.is_paid ? (
-                                                <button className="px-4 md:px-6 py-2 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-default">
-                                                    Receipt
-                                                </button>
-                                            ) : (
-                                                <Link
-                                                    href={`/staff/cashier/payment/${invoice.id}`}
-                                                    className="inline-flex px-4 md:px-6 py-2 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all items-center gap-2"
-                                                >
-                                                    Pay
-                                                </Link>
-                                            )}
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td className="px-6 md:px-8 py-6 text-right sm:text-left">
+                                                <div className="text-lg font-black text-gray-900">${parseFloat(invoice.total_ft).toFixed(2)}</div>
+                                                {invoice.discount_amount > 0 && (
+                                                    <div className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
+                                                        -${invoice.discount_type === 'FIXED' ? invoice.discount_amount : ((parseFloat(invoice.total_ht) * parseFloat(invoice.discount_amount)) / 100).toFixed(2)} Off
+                                                    </div>
+                                                )}
+                                                {!invoice.is_paid && <div className="sm:hidden text-[9px] font-bold text-orange-500 uppercase tracking-wider">Unpaid</div>}
+                                            </td>
+                                            <td className="px-6 md:px-8 py-6 hidden sm:table-cell">
+                                                {invoice.is_paid ? (
+                                                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100 flex items-center gap-1.5 w-fit">
+                                                        <CheckCircle size={12} /> PAID
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-orange-100 flex items-center gap-1.5 w-fit">
+                                                        <Clock size={12} /> UNPAID
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 md:px-8 py-6 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            const printWindow = window.open('', '', 'width=600,height=800');
+                                                            if (printWindow) {
+                                                                const content = `
+                                                                    <html>
+                                                                        <head>
+                                                                            <title>Invoice #${invoice.invoice_number}</title>
+                                                                            <style>
+                                                                                body { font-family: monospace; padding: 20px; }
+                                                                                .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 20px; margin-bottom: 20px; }
+                                                                                .item { display: flex; justify-content: space-between; margin: 10px 0; }
+                                                                                .total { font-weight: bold; font-size: 1.2em; margin-top: 20px; border-top: 1px dashed #000; padding-top: 10px; }
+                                                                            </style>
+                                                                        </head>
+                                                                        <body>
+                                                                            <div class="header">
+                                                                                <h2>KWALE BEACH RESORT</h2>
+                                                                                <p>Invoice #${invoice.invoice_number}</p>
+                                                                                <p>Date: ${invoice.date_issued}</p>
+                                                                                <p>Location: ${invoice.reference_location || `Room ${invoice.room_number}`}</p>
+                                                                            </div>
+                                                                            ${invoice.items.map((item: any) => `
+                                                                                <div class="item">
+                                                                                    <span>${item.description} x${item.quantity}</span>
+                                                                                    <span>$${item.unit_price}</span>
+                                                                                </div>
+                                                                            `).join('')}
+                                                                            <div class="total">
+                                                                                <div class="item"><span>Subtotal:</span> <span>$${invoice.total_ht}</span></div>
+                                                                                ${invoice.discount_amount > 0 ? `
+                                                                                    <div class="item"><span>Discount:</span> <span>-$${invoice.discount_type === 'FIXED' ? invoice.discount_amount : ((parseFloat(invoice.total_ht) * parseFloat(invoice.discount_amount)) / 100).toFixed(2)}</span></div>
+                                                                                ` : ''}
+                                                                                <div class="item"><span>TOTAL:</span> <span>$${invoice.total_ft}</span></div>
+                                                                            </div>
+                                                                            <p style="text-align:center; margin-top:40px;">Thank you for visiting!</p>
+                                                                        </body>
+                                                                    </html>
+                                                                `;
+                                                                printWindow.document.write(content);
+                                                                printWindow.document.close();
+                                                                printWindow.print();
+                                                            }
+                                                        }}
+                                                        className="p-2 bg-gray-100 text-gray-900 rounded-xl hover:bg-gray-200 transition-all border border-gray-200"
+                                                        title="Print Invoice"
+                                                    >
+                                                        <Receipt size={18} />
+                                                    </button>
+                                                    {invoice.is_paid ? (
+                                                        <div className="px-4 md:px-6 py-2 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-default">
+                                                            Receipt
+                                                        </div>
+                                                    ) : (
+                                                        <Link
+                                                            href={`/staff/cashier/payment/${invoice.id}`}
+                                                            className="inline-flex px-4 md:px-6 py-2 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all items-center gap-2"
+                                                        >
+                                                            Pay
+                                                        </Link>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/* Nested Item Details */}
+                                        <tr className="bg-gray-50/30">
+                                            <td colSpan={5} className="px-8 py-0">
+                                                <div className="pl-14 pb-4 space-y-2 border-l-2 border-emerald-100 ml-5">
+                                                    {invoice.items.map((item: any) => (
+                                                        <div key={item.id} className="flex justify-between items-center max-w-md">
+                                                            <div className="text-[11px] font-bold text-gray-500">
+                                                                {item.description} <span className="text-gray-300 ml-1">x{item.quantity}</span>
+                                                            </div>
+                                                            <div className="text-[11px] font-black text-gray-400">${item.unit_price}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </>
                                 ))}
                             </tbody>
                         </table>
