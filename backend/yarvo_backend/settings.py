@@ -90,10 +90,10 @@ WSGI_APPLICATION = 'yarvo_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'yarvo',
-        'USER': 'postgres',
-        'PASSWORD': 'Password@pos1',
-        'HOST': 'localhost',
+        'NAME': 'kwalee_db',
+        'USER': 'kwalee_user',
+        'PASSWORD': 'KwaleeBeach2026!',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
