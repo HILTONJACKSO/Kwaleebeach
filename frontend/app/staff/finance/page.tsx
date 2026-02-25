@@ -26,43 +26,36 @@ function FinanceDashboardContent() {
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [accRes, txRes] = await Promise.all([
-                    fetch('/api/finance/accounts/', {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                        }
-                    }),
-                    fetch('/api/finance/transactions/', {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                        }
-                    })
-                ]);
-                if (!accRes.ok) {
-                    console.warn(`Failed to fetch accounts (Status: ${accRes.status}). Please log in again if this persists.`);
-                    setAccounts([]);
-                } else {
-                    const accData = await accRes.json();
-                    setAccounts(Array.isArray(accData) ? accData : []);
-                }
-
-                if (!txRes.ok) {
-                    console.warn(`Failed to fetch transactions (Status: ${txRes.status}).`);
-                    setTransactions([]);
-                } else {
-                    const txData = await txRes.json();
-                    setTransactions(Array.isArray(txData) ? txData : []);
-                }
-            } catch (error) {
-                console.error("Error fetching financial data:", error);
-            } finally {
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            const token = localStorage.getItem('yarvo_token');
+            const [accRes, txRes] = await Promise.all([
+                fetch('/api/finance/accounts/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch('/api/finance/transactions/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+            if (accRes.ok) {
+                const accData = await accRes.json();
+                setAccounts(Array.isArray(accData) ? accData : []);
             }
-        };
+            if (txRes.ok) {
+                const txData = await txRes.json();
+                setTransactions(Array.isArray(txData) ? txData : []);
+            }
+        } catch (error) {
+            console.error("Error fetching financial data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
+        const interval = setInterval(fetchData, 5000);
+        return () => clearInterval(interval);
     }, []);
 
     const stats = [
