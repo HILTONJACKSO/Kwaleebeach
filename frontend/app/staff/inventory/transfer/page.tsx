@@ -62,7 +62,10 @@ export default function TransferInventoryPage() {
                 router.push('/staff/inventory');
             } else {
                 const errorData = await res.json();
-                showNotification(errorData.error || "Transfer failed", "error");
+                const errorMessage = typeof errorData === 'object'
+                    ? Object.entries(errorData).map(([key, val]) => `${key}: ${val}`).join(', ')
+                    : "Transfer failed";
+                showNotification(errorMessage, "error");
             }
         } catch (e) {
             showNotification("Connection error", "error");

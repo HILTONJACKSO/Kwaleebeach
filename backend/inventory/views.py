@@ -29,7 +29,7 @@ class StockTransferViewSet(viewsets.ModelViewSet):
         item_id = request.data.get('item')
         from_dept = request.data.get('from_dept')
         to_dept = request.data.get('to_dept')
-        quantity = float(request.data.get('quantity', 0))
+        quantity = Decimal(str(request.data.get('quantity', 0)))
 
         if from_dept == to_dept:
             return Response({'error': 'Source and destination departments must be different.'}, status=status.HTTP_400_BAD_REQUEST)
