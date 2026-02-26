@@ -54,7 +54,7 @@ class Department(models.TextChoices):
 class InventoryStock(models.Model):
     item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name='stocks')
     department = models.CharField(max_length=20, choices=Department.choices, default=Department.MAIN)
-    quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         unique_together = ('item', 'department')

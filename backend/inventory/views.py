@@ -39,13 +39,17 @@ class StockTransferViewSet(viewsets.ModelViewSet):
         source_stock, _ = InventoryStock.objects.get_or_create(item=item, department=from_dept)
         dest_stock, _ = InventoryStock.objects.get_or_create(item=item, department=to_dept)
 
+        # Ensure we have Decimal types for calculation
+        source_qty = Decimal(str(source_stock.quantity))
+        dest_qty = Decimal(str(dest_stock.quantity))
+
         # Check if enough stock in source
-        if source_stock.quantity < quantity:
-            return Response({'error': f'Insufficient stock in {from_dept}. Available: {source_stock.quantity}'}, status=status.HTTP_400_BAD_REQUEST)
+        if source_qty < quantity:
+            return Response({'error': f'Insufficient stock in {from_dept}. Available: {source_qty}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Update stock levels
-        source_stock.quantity -= quantity
-        dest_stock.quantity += quantity
+        source_stock.quantity = source_qty - quantity
+        dest_stock.quantity = dest_qty + quantity
         source_stock.save()
         dest_stock.save()
 
@@ -109,7 +113,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                             item=menu_item.inventory_item,
                             department=dept
                         )
-                        stock.quantity -= Decimal(str(item.quantity))
+                        current_qty = Decimal(str(stock.quantity))
+                        stock.quantity = current_qty - Decimal(str(item.quantity))
                         stock.save()
                         print(f"DEBUG: Deducting {item.quantity} {menu_item.inventory_item.name} from {dept}")
 
