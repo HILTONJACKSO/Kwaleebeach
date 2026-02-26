@@ -19,6 +19,9 @@ class InventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryItem
         fields = ['id', 'name', 'sku', 'unit', 'cost_price', 'selling_price', 'stocks', 'total_stock']
+        extra_kwargs = {
+            'selling_price': {'required': False, 'allow_null': True}
+        }
 
     def get_total_stock(self, obj):
         return sum(s.quantity for s in obj.stocks.all())
