@@ -27,6 +27,7 @@ class MenuItem(models.Model):
     image = models.ImageField(upload_to='menu_items/', blank=True, null=True)
     is_available = models.BooleanField(default=True)
     preparation_station = models.CharField(max_length=20, choices=STATION_CHOICES, default='KITCHEN')
+    inventory_item = models.ForeignKey('InventoryItem', on_delete=models.SET_NULL, blank=True, null=True, related_name='menu_items')
     
     def __str__(self):
         return self.name

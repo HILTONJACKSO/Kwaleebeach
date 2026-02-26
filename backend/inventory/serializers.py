@@ -47,10 +47,15 @@ class RestaurantTableSerializer(serializers.ModelSerializer):
 
 class MenuItemSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
+    inventory_item_name = serializers.CharField(source='inventory_item.name', read_only=True)
 
     class Meta:
         model = MenuItem
-        fields = ['id', 'category', 'category_name', 'name', 'description', 'price', 'image', 'is_available', 'preparation_station']
+        fields = [
+            'id', 'category', 'category_name', 'name', 'description', 
+            'price', 'image', 'is_available', 'preparation_station',
+            'inventory_item', 'inventory_item_name'
+        ]
 
 class OrderItemSerializer(serializers.ModelSerializer):
     menu_item_name = serializers.CharField(source='menu_item.name', read_only=True)

@@ -9,6 +9,7 @@ from .serializers import (
     RestaurantTableSerializer
 )
 from django.db import transaction
+from decimal import Decimal
 
 class InventoryItemViewSet(viewsets.ModelViewSet):
     queryset = InventoryItem.objects.all().order_by('name')
@@ -75,12 +76,43 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='update-status')
+    @transaction.atomic
     def update_status(self, request, pk=None):
         order = self.get_object()
+        old_status = order.status
         new_status = request.data.get('status')
+        
         if new_status in ['PENDING', 'PREPARING', 'READY', 'SERVED']:
             order.status = new_status
             order.save()
+            
+            # Automatically deduct stock when served
+            if old_status != 'SERVED' and new_status == 'SERVED':
+                for item in order.items.all():
+                    menu_item = item.menu_item
+                    if menu_item.inventory_item:
+                        # Map order location & station to inventory department
+                        if menu_item.preparation_station == 'KITCHEN':
+                            dept = 'KITCHEN'
+                        elif menu_item.preparation_station == 'BAR':
+                            if order.location_type == 'POOL':
+                                dept = 'POOL'
+                            elif order.location_type == 'BEACH':
+                                dept = 'BEACH_BAR'
+                            else:
+                                dept = 'BAR'
+                        else:
+                            dept = 'MAIN'
+                            
+                        # Deduct from relevant stock
+                        stock, _ = InventoryStock.objects.get_or_create(
+                            item=menu_item.inventory_item,
+                            department=dept
+                        )
+                        stock.quantity -= Decimal(str(item.quantity))
+                        stock.save()
+                        print(f"DEBUG: Deducting {item.quantity} {menu_item.inventory_item.name} from {dept}")
+
             return Response({'status': 'success', 'new_status': order.status})
         return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
 

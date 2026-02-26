@@ -18,6 +18,7 @@ export default function EditMenuItemPage() {
     const { id } = useParams();
     const { showNotification } = useUI();
     const [categories, setCategories] = useState<Category[]>([]);
+    const [inventoryItems, setInventoryItems] = useState<{ id: number; name: string }[]>([]);
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -28,17 +29,33 @@ export default function EditMenuItemPage() {
         price: '',
         category: '',
         preparation_station: 'KITCHEN',
+        inventory_item: '',
         is_available: true
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
 
     useEffect(() => {
         const loadPageData = async () => {
-            await Promise.all([fetchCategories(), fetchItemData()]);
+            await Promise.all([fetchCategories(), fetchInventoryItems(), fetchItemData()]);
             setFetching(false);
         };
         loadPageData();
     }, [id]);
+
+    const fetchInventoryItems = async () => {
+        try {
+            const res = await fetch('/api/inventory/items/', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                }
+            });
+            if (res.ok) {
+                setInventoryItems(await res.json());
+            }
+        } catch (e) {
+            console.error("Failed to fetch inventory items", e);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -70,6 +87,7 @@ export default function EditMenuItemPage() {
                     price: data.price,
                     category: data.category.toString(),
                     preparation_station: data.preparation_station,
+                    inventory_item: data.inventory_item ? data.inventory_item.toString() : '',
                     is_available: data.is_available
                 });
                 if (data.image) {
@@ -103,6 +121,7 @@ export default function EditMenuItemPage() {
         data.append('price', formData.price);
         data.append('category', formData.category);
         data.append('preparation_station', formData.preparation_station);
+        data.append('inventory_item', formData.inventory_item);
         data.append('is_available', formData.is_available.toString());
 
         if (imageFile) {
@@ -290,6 +309,26 @@ export default function EditMenuItemPage() {
                                         <ChevronLeft size={18} className="absolute right-6 top-1/2 -translate-y-1/2 rotate-[-90deg] text-gray-400 pointer-events-none" />
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Inventory Link (Optional)</label>
+                                <div className="relative">
+                                    <select
+                                        className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.5rem] focus:bg-white focus:border-[var(--color-primary)] outline-none transition-all font-bold text-gray-900 appearance-none cursor-pointer"
+                                        value={formData.inventory_item}
+                                        onChange={e => setFormData({ ...formData, inventory_item: e.target.value })}
+                                    >
+                                        <option value="">None (Not tracked)</option>
+                                        {inventoryItems.map(item => (
+                                            <option key={item.id} value={item.id}>{item.name}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronLeft size={18} className="absolute right-6 top-1/2 -translate-y-1/2 rotate-[-90deg] text-gray-400 pointer-events-none" />
+                                </div>
+                                <p className="text-[10px] text-gray-400 font-medium ml-1 italic leading-tight">
+                                    Link this menu offering to an inventory item for automatic stock tracking.
+                                </p>
                             </div>
 
                             <button
