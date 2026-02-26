@@ -35,6 +35,13 @@ class MenuItem(models.Model):
 class InventoryItem(models.Model):
     name = models.CharField(max_length=100)
     sku = models.CharField(max_length=50, unique=True)
+    category = models.CharField(max_length=50, choices=[
+        ('BAR', 'Bar'),
+        ('KITCHEN', 'Kitchen'),
+        ('HOUSEKEEPING', 'Housekeeping'),
+        ('OFFICE', 'Office'),
+        ('MAINTENANCE', 'Maintenance'),
+    ], default='BAR')
     unit = models.CharField(max_length=20) # e.g. bottle, kg
     cost_price = models.DecimalField(max_digits=10, decimal_places=2)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)

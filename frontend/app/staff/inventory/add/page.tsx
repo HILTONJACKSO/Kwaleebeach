@@ -14,6 +14,7 @@ export default function AddInventoryItemPage() {
     const [newItem, setNewItem] = useState({
         name: '',
         sku: '',
+        category: 'BAR',
         unit: 'Pcs',
         cost_price: '',
         initial_stock: '0',
@@ -33,6 +34,7 @@ export default function AddInventoryItemPage() {
                 body: JSON.stringify({
                     name: newItem.name,
                     sku: newItem.sku,
+                    category: newItem.category,
                     unit: newItem.unit,
                     cost_price: newItem.cost_price,
                 })
@@ -129,13 +131,28 @@ export default function AddInventoryItemPage() {
                             value={newItem.unit}
                             onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
                         >
-                            <option>Bottle</option>
-                            <option>Pcs</option>
-                            <option>Box</option>
-                            <option>Kg</option>
-                            <option>Litre</option>
+                            <option value="Bottle">Bottle</option>
+                            <option value="Pcs">Pcs</option>
+                            <option value="Box">Box</option>
+                            <option value="Kg">Kg</option>
+                            <option value="Litre">Litre</option>
                         </select>
                     </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</label>
+                    <select
+                        className="w-full px-6 py-4 bg-white rounded-2xl border-2 border-gray-300 focus:ring-2 focus:ring-[var(--color-primary)] text-sm font-bold text-black transition-all"
+                        value={newItem.category}
+                        onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                    >
+                        <option value="BAR">Bar</option>
+                        <option value="KITCHEN">Kitchen</option>
+                        <option value="HOUSEKEEPING">Housekeeping</option>
+                        <option value="OFFICE">Office</option>
+                        <option value="MAINTENANCE">Maintenance</option>
+                    </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">

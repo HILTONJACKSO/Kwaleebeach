@@ -18,7 +18,7 @@ class InventoryItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryItem
-        fields = ['id', 'name', 'sku', 'unit', 'cost_price', 'selling_price', 'stocks', 'total_stock']
+        fields = ['id', 'name', 'sku', 'category', 'unit', 'cost_price', 'selling_price', 'stocks', 'total_stock']
         extra_kwargs = {
             'selling_price': {'required': False, 'allow_null': True}
         }

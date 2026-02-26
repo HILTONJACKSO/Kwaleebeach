@@ -51,7 +51,7 @@ function InventoryPageContent() {
 
     const fetchData = async () => {
         try {
-            const res = await fetch('/api/inventory/items/', {
+            const res = await fetch(`/api/inventory/items/?_t=${Date.now()}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 }
@@ -76,7 +76,7 @@ function InventoryPageContent() {
         item.sku.toLowerCase().includes(searchQuery.toLowerCase())
     ).filter(item => {
         if (filter === 'ALL') return true;
-        if (!item.category) return true;
+        if (!item.category) return false;
         return item.category.toUpperCase() === filter.toUpperCase();
     });
 

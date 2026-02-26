@@ -15,6 +15,7 @@ export default function EditInventoryItemPage() {
     const [itemData, setItemData] = useState({
         name: '',
         sku: '',
+        category: '',
         unit: '',
         cost_price: '',
     });
@@ -32,6 +33,7 @@ export default function EditInventoryItemPage() {
                     setItemData({
                         name: data.name,
                         sku: data.sku,
+                        category: data.category,
                         unit: data.unit,
                         cost_price: data.cost_price,
                     });
@@ -137,13 +139,28 @@ export default function EditInventoryItemPage() {
                             value={itemData.unit}
                             onChange={(e) => setItemData({ ...itemData, unit: e.target.value })}
                         >
-                            <option>Bottle</option>
-                            <option>Pcs</option>
-                            <option>Box</option>
-                            <option>Kg</option>
-                            <option>Litre</option>
+                            <option value="Bottle">Bottle</option>
+                            <option value="Pcs">Pcs</option>
+                            <option value="Box">Box</option>
+                            <option value="Kg">Kg</option>
+                            <option value="Litre">Litre</option>
                         </select>
                     </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</label>
+                    <select
+                        className="w-full px-6 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-[var(--color-primary)] text-sm font-bold transition-all"
+                        value={itemData.category}
+                        onChange={(e) => setItemData({ ...itemData, category: e.target.value })}
+                    >
+                        <option value="BAR">Bar</option>
+                        <option value="KITCHEN">Kitchen</option>
+                        <option value="HOUSEKEEPING">Housekeeping</option>
+                        <option value="OFFICE">Office</option>
+                        <option value="MAINTENANCE">Maintenance</option>
+                    </select>
                 </div>
 
                 <div className="space-y-2">
