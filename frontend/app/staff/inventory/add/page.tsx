@@ -60,7 +60,11 @@ export default function AddInventoryItemPage() {
                 showNotification(`${newItem.name} added successfully!`, 'success');
                 router.push('/staff/inventory');
             } else {
-                showNotification("Failed to add item", "error");
+                const errorData = await res.json();
+                const errorMessage = typeof errorData === 'object'
+                    ? Object.entries(errorData).map(([key, val]) => `${key}: ${val}`).join(', ')
+                    : "Failed to add item";
+                showNotification(errorMessage, "error");
             }
         } catch (e) {
             showNotification("Connection error", "error");
