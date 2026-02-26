@@ -30,14 +30,18 @@ export default function TransferInventoryPage() {
     });
 
     useEffect(() => {
+        setLoading(true);
         fetch('/api/inventory/items/', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
             }
         })
             .then(res => res.json())
-            .then(data => setItems(data))
-            .catch(err => console.error(err));
+            .then(data => {
+                setItems(Array.isArray(data) ? data : []);
+            })
+            .catch(err => console.error(err))
+            .finally(() => setLoading(false));
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {

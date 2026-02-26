@@ -58,7 +58,7 @@ function InventoryPageContent() {
             });
             if (res.ok) {
                 const data = await res.json();
-                setInventory(data);
+                setInventory(Array.isArray(data) ? data : []);
             }
         } catch (e) {
             console.error("Failed to fetch inventory", e);
