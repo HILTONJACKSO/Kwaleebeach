@@ -215,7 +215,7 @@ function InventoryPageContent() {
                                         <div className="flex flex-wrap gap-2">
                                             {item.stocks && item.stocks.length > 0 ? (
                                                 item.stocks.map(stock => (
-                                                    <div key={stock.id} className="px-3 py-1 bg-gray-100 rounded-lg text-[10px] font-bold">
+                                                    <div key={stock.id} className="px-3 py-1.5 bg-blue-50 text-black border border-blue-100 rounded-xl text-[10px] font-black shadow-sm">
                                                         {stock.department_display}: {stock.quantity}
                                                     </div>
                                                 ))
