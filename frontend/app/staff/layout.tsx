@@ -13,7 +13,7 @@ export default function StaffLayout({
     const { user } = useAuth();
 
     const initials = user
-        ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}` || user.username.substring(0, 2).toUpperCase()
+        ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}` || user.username?.substring(0, 2).toUpperCase() || '??'
         : '??';
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -165,7 +165,7 @@ export default function StaffLayout({
 
                         <div className="flex items-center gap-3 pl-4 lg:pl-6 border-l border-gray-100">
                             <div className="text-right hidden sm:block">
-                                <div className="text-sm font-bold text-gray-900">{user ? `${user.first_name} ${user.last_name}` : 'Staff Member'}</div>
+                                <div className="text-sm font-bold text-gray-900">{user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username : 'Staff Member'}</div>
                                 <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest leading-none">{user?.role || 'Guest'}</div>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white font-black shadow-lg shadow-orange-200 uppercase">

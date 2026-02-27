@@ -33,8 +33,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const storedUser = localStorage.getItem('yarvo_user');
 
         if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
+            try {
+                setToken(storedToken);
+                setUser(JSON.parse(storedUser));
+            } catch (e) {
+                console.error('Failed to parse stored user data:', e);
+                localStorage.removeItem('yarvo_token');
+                localStorage.removeItem('yarvo_user');
+            }
         }
         setLoading(false);
     }, []);
