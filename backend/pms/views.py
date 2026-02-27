@@ -8,8 +8,12 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from datetime import date
 import uuid
+import logging
+import traceback
 
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
+logger = logging.getLogger(__name__)
 
 class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all().order_by('room_number')
@@ -18,11 +22,30 @@ class RoomViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid():
-            print(f"Room creation validation errors: {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return super().create(request, *args, **kwargs)
+        log_file = '/var/www/kwaleebeach/backend/room_debug.log'
+        with open(log_file, 'a') as f:
+            f.write(f"\n--- New Request {date.today()} ---\n")
+            f.write(f"Data: {request.data}\n")
+        
+        try:
+            serializer = self.get_serializer(data=request.data)
+            if (not serializer.is_valid()):
+                with open(log_file, 'a') as f:
+                    f.write(f"Validation Errors: {serializer.errors}\n")
+                
+                # Convert serializer errors to a readable string for the frontend
+                error_details = []
+                for field, errors in serializer.errors.items():
+                    error_details.append(f"{field}: {', '.join(errors) if isinstance(errors, list) else str(errors)}")
+                
+                return Response({'detail': '; '.join(error_details)}, status=status.HTTP_400_BAD_REQUEST)
+            
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            with open(log_file, 'a') as f:
+                f.write(f"CRITICAL ERROR: {str(e)}\n")
+                f.write(traceback.format_exc())
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -51,6 +74,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         
         # Create Invoice for the room stay
         try:
+            from finance.models import Invoice, InvoiceItem
             invoice = Invoice.objects.create(
                 booking=booking,
                 invoice_number=f"INV-ROOM-{uuid.uuid4().hex[:6].upper()}",

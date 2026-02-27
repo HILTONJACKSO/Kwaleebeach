@@ -63,7 +63,11 @@ export default function AddRoomPage() {
                 router.push('/staff/rooms');
             } else {
                 const data = await res.json().catch(() => ({}));
-                showNotification(data.detail || "Failed to add room", "error");
+                // Handle both string and object errors to prevent React crash
+                const errorMessage = typeof data.detail === 'object'
+                    ? JSON.stringify(data.detail)
+                    : data.detail || "Failed to add room";
+                showNotification(errorMessage, "error");
             }
         } catch (e) {
             showNotification("Connection error", "error");
