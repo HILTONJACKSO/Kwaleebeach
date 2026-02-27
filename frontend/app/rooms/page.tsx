@@ -159,7 +159,7 @@ export default function RoomsPage() {
                                     </div>
 
                                     <p className="text-gray-500 font-medium mb-8 text-sm leading-relaxed line-clamp-2">
-                                        {room.description || "Experience unparalleled luxury in our carefully designed accommodation with breathtaking views."}
+                                        {room.description}
                                     </p>
 
                                     <div className="flex flex-wrap gap-4 mb-8">
@@ -218,8 +218,8 @@ export default function RoomsPage() {
                                         </div>
                                     </div>
 
-                                    <p className="text-gray-500 font-medium mb-6 text-sm leading-relaxed max-w-2xl">
-                                        {room.description || "Experience unparalleled luxury in our carefully designed accommodation with breathtaking views and premium amenities."}
+                                    <p className="text-gray-500 font-medium mb-8 text-sm leading-relaxed max-w-2xl">
+                                        {room.description}
                                     </p>
 
                                     <div className="flex items-center justify-between mt-auto">

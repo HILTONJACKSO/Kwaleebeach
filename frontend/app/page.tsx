@@ -250,52 +250,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- EXPERIENCE COLLECTION --- */}
-      <section className="py-32 px-4 bg-gray-900">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 text-[var(--color-yellow)] rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-white/10">
-              <Sparkles size={12} className="text-[var(--color-yellow)]" /> Curated Adventures
-            </div>
-            <h2 className="text-5xl md:text-7xl text-white tracking-tighter leading-none mb-6" style={{ fontFamily: 'serif' }}>{getConfig('exp_title', 'The Experience Collection')}</h2>
-            <p className="text-gray-400 font-medium max-w-lg leading-relaxed">{getConfig('exp_desc', 'Beyond the luxury of your room lies a world of discovery. From hidden lagoons to premium coastal bundles.')}</p>
-          </div>
-          <Link href="/activities">
-            <button className="bg-[var(--color-yellow)] text-gray-900 px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white transition-all shadow-lg flex items-center gap-2">
-              View All Experiences <ArrowRight size={16} />
-            </button>
-          </Link>
-        </div>
+      {/* Experience Collection removed as requested (mockup) */}
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { title: "Lagoon Sunset Safari", price: 45, type: "Tour", img: "https://images.unsplash.com/photo-1544256718-3bcf237f3974?auto=format&fit=crop&w=800&q=80" },
-            { title: "Romantic Coastal Escape", price: 150, type: "Package", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80" },
-            { title: "Ancient Forest Trek", price: 35, type: "Tour", img: "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=800&q=80" },
-          ].map((item, i) => (
-            <div key={i} className="group relative bg-white/5 rounded-[3rem] overflow-hidden hover:bg-white/10 transition-all duration-500 border border-white/10 p-2">
-              <div className="relative h-72 rounded-[2.5rem] overflow-hidden mb-8">
-                <img src={item.img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                <div className="absolute top-5 left-5 bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 border border-white/10 shadow-xl">
-                  {item.type === 'Package' ? <Gem size={14} className="text-[var(--color-yellow)]" /> : <Compass size={14} className="text-[var(--color-yellow)]" />}
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white">{item.type}</span>
-                </div>
-                <div className="absolute top-5 right-5 bg-[var(--color-yellow)] px-4 py-2 rounded-2xl shadow-xl">
-                  <span className="text-gray-900 font-black text-xs">${item.price}</span>
-                </div>
-              </div>
-              <div className="px-6 pb-8 text-center">
-                <h3 className="text-2xl font-serif text-white tracking-tight leading-tight mb-8 group-hover:text-[var(--color-yellow)] transition-colors">{item.title}</h3>
-                <Link href="/activities">
-                  <button className="w-full py-4 rounded-2xl bg-[var(--color-yellow)] border border-[var(--color-yellow)] text-[10px] font-black uppercase tracking-widest text-gray-900 hover:bg-white hover:text-gray-900 transition-all">
-                    Discover Details
-                  </button>
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* --- ROOM LISTING GRID --- */}
       <section className="py-32 px-4 bg-gray-50/50">
@@ -310,35 +266,44 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {rooms.map((room, i) => (
-            <div key={i} className="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-gray-100 p-2">
-              <div className="relative h-64 rounded-[2rem] overflow-hidden">
-                <img src={room.image_url || `https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <button className="absolute top-4 right-4 w-10 h-10 bg-white/50 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-rose-500 hover:text-white transition-all">
-                  <Heart size={20} />
-                </button>
-              </div>
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-black text-gray-900 tracking-tight">{room.room_type || 'The Mark Hotel'}</h3>
-                  <div className="text-xl font-black text-gray-900">${room.price_per_night || '250'}</div>
-                </div>
-                <div className="flex justify-between items-center pt-4 border-t border-gray-50 mt-4">
-                  <div className="flex items-center gap-1 text-[var(--color-yellow)]">
-                    <Star size={14} fill="currentColor" />
-                    <span className="text-xs font-black text-gray-900">New</span>
-                    <span className="text-[10px] font-black text-gray-400">(0)</span>
-                  </div>
-                  <Link href="/rooms">
-                    <button className="bg-[var(--color-yellow)] text-gray-900 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-colors shadow-lg">
-                      Book Now
+        <div className="max-w-7xl mx-auto">
+          {rooms.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {rooms.map((room, i) => (
+                <div key={i} className="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-gray-100 p-2">
+                  <div className="relative h-64 rounded-[2rem] overflow-hidden">
+                    <img src={room.image_url || `https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <button className="absolute top-4 right-4 w-10 h-10 bg-white/50 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-rose-500 hover:text-white transition-all">
+                      <Heart size={20} />
                     </button>
-                  </Link>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-black text-gray-900 tracking-tight">{room.room_type}</h3>
+                      <div className="text-xl font-black text-gray-900">${room.price_per_night}</div>
+                    </div>
+                    <div className="flex justify-between items-center pt-4 border-t border-gray-50 mt-4">
+                      <div className="flex items-center gap-1 text-[var(--color-yellow)]">
+                        <Star size={14} fill="currentColor" />
+                        <span className="text-xs font-black text-gray-900">New</span>
+                        <span className="text-[10px] font-black text-gray-400">(0)</span>
+                      </div>
+                      <Link href={`/booking/details?room=${room.id}`}>
+                        <button className="bg-gray-900 text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all shadow-lg">
+                          Book Now
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div className="text-center py-20 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200">
+              <h3 className="text-2xl font-black text-gray-900 mb-2">Our Stays are Coming Soon</h3>
+              <p className="text-gray-500 font-medium">We are currently preparing our exclusive beachfront accommodations.</p>
+            </div>
+          )}
         </div>
       </section>
 
