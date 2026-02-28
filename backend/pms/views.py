@@ -57,6 +57,7 @@ class RoomViewSet(viewsets.ModelViewSet):
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all().order_by('-created_at')
     serializer_class = BookingSerializer
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         # Data from request
