@@ -17,7 +17,8 @@ import {
     ChevronDown,
     ShieldCheck,
     CreditCard,
-    User
+    User,
+    ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 
