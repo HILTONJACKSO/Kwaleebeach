@@ -2,33 +2,48 @@ from rest_framework import permissions
 
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        print(f"DEBUG: Checking permission for {request.user}", flush=True)
-        if request.user.is_authenticated:
-            print(f"DEBUG: User role: {request.user.role}", flush=True)
-        else:
-            print("DEBUG: User is NOT authenticated", flush=True)
-        return request.user.is_authenticated and request.user.role == 'ADMIN'
+        if not request.user.is_authenticated:
+            return False
+        return 'ADMIN' in (request.user.roles or [request.user.role])
 
 class IsFrontDesk(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['ADMIN', 'FRONT_DESK']
+        if not request.user.is_authenticated:
+            return False
+        roles = request.user.roles or [request.user.role]
+        return any(role in ['ADMIN', 'FRONT_DESK'] for role in roles)
 
 class IsWaiter(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['ADMIN', 'WAITER']
+        if not request.user.is_authenticated:
+            return False
+        roles = request.user.roles or [request.user.role]
+        return any(role in ['ADMIN', 'WAITER'] for role in roles)
 
 class IsKitchenStaff(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['ADMIN', 'KITCHEN']
+        if not request.user.is_authenticated:
+            return False
+        roles = request.user.roles or [request.user.role]
+        return any(role in ['ADMIN', 'KITCHEN'] for role in roles)
 
 class IsBarStaff(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['ADMIN', 'BAR']
+        if not request.user.is_authenticated:
+            return False
+        roles = request.user.roles or [request.user.role]
+        return any(role in ['ADMIN', 'BAR'] for role in roles)
 
 class IsCashier(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['ADMIN', 'CASHIER']
+        if not request.user.is_authenticated:
+            return False
+        roles = request.user.roles or [request.user.role]
+        return any(role in ['ADMIN', 'CASHIER'] for role in roles)
 
 class IsRecreationStaff(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['ADMIN', 'RECREATION']
+        if not request.user.is_authenticated:
+            return False
+        roles = request.user.roles or [request.user.role]
+        return any(role in ['ADMIN', 'RECREATION'] for role in roles)

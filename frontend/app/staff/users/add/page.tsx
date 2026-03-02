@@ -27,6 +27,7 @@ function AddStaffForm() {
         last_name: '',
         email: '',
         role: 'WAITER',
+        roles: [] as string[],
         phone: '',
         password: '',
     });
@@ -166,24 +167,37 @@ function AddStaffForm() {
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Professional Role</label>
-                    <div className="relative">
-                        <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <select
-                            required
-                            className="w-full pl-12 pr-6 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-[var(--color-primary)] text-sm font-bold transition-all"
-                            value={userData.role}
-                            onChange={(e) => setUserData({ ...userData, role: e.target.value })}
-                        >
-                            <option value="ADMIN">System Administrator</option>
-                            <option value="FRONT_DESK">Front Desk / Reception</option>
-                            <option value="WAITER">Waiter / Service</option>
-                            <option value="KITCHEN">Kitchen Staff</option>
-                            <option value="BAR">Bar Staff</option>
-                            <option value="CASHIER">Cashier / Finance</option>
-                            <option value="RECREATION">Recreation / Pool / Beach</option>
-                        </select>
+                <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Professional Roles (Select all that apply)</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {[
+                            { id: 'ADMIN', label: 'Administrator' },
+                            { id: 'FRONT_DESK', label: 'Front Desk' },
+                            { id: 'WAITER', label: 'Waiter' },
+                            { id: 'KITCHEN', label: 'Kitchen' },
+                            { id: 'BAR', label: 'Bar' },
+                            { id: 'CASHIER', label: 'Cashier' },
+                            { id: 'RECREATION', label: 'Recreation' },
+                        ].map((role) => (
+                            <button
+                                key={role.id}
+                                type="button"
+                                onClick={() => {
+                                    const currentRoles = userData.roles || [];
+                                    const newRoles = currentRoles.includes(role.id)
+                                        ? currentRoles.filter(r => r !== role.id)
+                                        : [...currentRoles, role.id];
+                                    setUserData({ ...userData, roles: newRoles, role: newRoles[0] || 'WAITER' });
+                                }}
+                                className={`px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border-2 text-left flex items-center justify-between ${userData.roles?.includes(role.id)
+                                    ? 'bg-gray-900 border-gray-900 text-white shadow-lg'
+                                    : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+                                    }`}
+                            >
+                                {role.label}
+                                {userData.roles?.includes(role.id) && <ShieldCheck size={14} className="text-[var(--color-primary)]" />}
+                            </button>
+                        ))}
                     </div>
                 </div>
 

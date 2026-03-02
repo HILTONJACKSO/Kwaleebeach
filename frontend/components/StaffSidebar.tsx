@@ -61,9 +61,12 @@ export default function StaffSidebar({ isMobileOpen, onClose }: StaffSidebarProp
         { name: 'Website CMS', href: '/staff/cms', icon: <Layout size={20} />, roles: ['ADMIN'] },
     ];
 
-    const navItems = allNavItems.filter(item =>
-        !user || item.roles.includes(user.role)
-    );
+    const navItems = allNavItems.filter(item => {
+        if (!user) return false;
+        // Check both new 'roles' array and legacy 'role' string
+        const userRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
+        return item.roles.some(requiredRole => userRoles.includes(requiredRole));
+    });
 
     return (
         <aside

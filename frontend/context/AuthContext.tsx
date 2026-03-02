@@ -7,6 +7,7 @@ interface User {
     username: string;
     email: string;
     role: 'ADMIN' | 'FRONT_DESK' | 'WAITER' | 'KITCHEN' | 'BAR' | 'CASHIER' | 'RECREATION';
+    roles: string[];
     first_name: string;
     last_name: string;
 }

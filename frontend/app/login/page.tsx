@@ -42,7 +42,9 @@ export default function LoginPage() {
                     'RECREATION': '/staff/pool',
                 };
 
-                router.push(roleRedirects[data.user.role] || '/staff/rooms');
+                const userRoles = data.user.roles && data.user.roles.length > 0 ? data.user.roles : [data.user.role];
+                const primaryRole = userRoles[0] || 'GUEST';
+                router.push(roleRedirects[primaryRole] || '/staff/rooms');
             } else {
                 const errorData = await response.json();
                 showNotification(errorData.detail || "Authentication failed. Please check your credentials.", "error");
