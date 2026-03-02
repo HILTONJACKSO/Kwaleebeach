@@ -15,7 +15,7 @@ interface Room {
 }
 
 interface BookingState {
-    room: Room | null;
+    rooms: Room[]; // Changed from room: Room | null
     checkIn: string;
     checkOut: string;
     adults: number;
@@ -29,7 +29,7 @@ interface BookingState {
 
 interface BookingContextType {
     state: BookingState;
-    setRoom: (room: Room) => void;
+    toggleRoom: (room: Room) => void;
     setDates: (checkIn: string, checkOut: string) => void;
     setGuests: (adults: number, children: number) => void;
     setPersonalInfo: (name: string, email: string, phone: string) => void;
@@ -39,7 +39,7 @@ interface BookingContextType {
 }
 
 const initialState: BookingState = {
-    room: null,
+    rooms: [],
     checkIn: '',
     checkOut: '',
     adults: 2,
@@ -56,7 +56,16 @@ const BookingContext = createContext<BookingContextType | undefined>(undefined);
 export function BookingProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<BookingState>(initialState);
 
-    const setRoom = (room: Room) => setState(prev => ({ ...prev, room }));
+    const toggleRoom = (room: Room) => {
+        setState(prev => {
+            const exists = prev.rooms.find(r => r.id === room.id);
+            if (exists) {
+                return { ...prev, rooms: prev.rooms.filter(r => r.id !== room.id) };
+            } else {
+                return { ...prev, rooms: [...prev.rooms, room] };
+            }
+        });
+    };
     const setDates = (checkIn: string, checkOut: string) => setState(prev => ({ ...prev, checkIn, checkOut }));
     const setGuests = (adults: number, children: number) => setState(prev => ({ ...prev, adults, children }));
     const setPersonalInfo = (guestName: string, guestEmail: string, guestPhone: string) =>
@@ -79,7 +88,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     return (
         <BookingContext.Provider value={{
             state,
-            setRoom,
+            toggleRoom,
             setDates,
             setGuests,
             setPersonalInfo,

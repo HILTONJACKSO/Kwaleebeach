@@ -7,6 +7,7 @@ from inventory.serializers import OrderSerializer
 from rest_framework.views import APIView
 from django.db.models import Q
 from datetime import date
+from decimal import Decimal
 import uuid
 import logging
 import traceback
@@ -59,40 +60,89 @@ class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
     permission_classes = [permissions.AllowAny]
 
-    def perform_create(self, serializer):
-        # Data from request
-        adults = self.request.data.get('adults', 2)
-        children = self.request.data.get('children', 0)
+    def create(self, request, *args, **kwargs):
+        room_ids = request.data.get('room_ids', [])
+        if not room_ids and request.data.get('room'):
+            room_ids = [request.data.get('room')]
+            
+        if not room_ids:
+            return Response({"detail": "No rooms selected or 'room_ids' missing."}, status=status.HTTP_400_BAD_REQUEST)
+
+        bookings = []
+        total_invoice_amount = 0
         
-        booking = serializer.save(adults=adults, children=children)
-        
-        # Calculate total price for the stay if not provided
-        if not booking.total_price:
+        # We'll use the first booking as the primary reference for the Invoice model's booking field
+        primary_booking = None
+
+        for room_id in room_ids:
+            data = request.data.copy()
+            data['room'] = room_id
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            
+            # Save booking with guest count
+            adults = data.get('adults', 2)
+            children = data.get('children', 0)
+            booking = serializer.save(adults=adults, children=children)
+            
+            # Calculate price
             num_nights = (booking.check_out - booking.check_in).days
             if num_nights <= 0: num_nights = 1
             booking.total_price = booking.room.price_per_night * num_nights
             booking.save()
-        
-        # Create Invoice for the room stay
+            
+            bookings.append(booking)
+            total_invoice_amount += booking.total_price
+            if not primary_booking:
+                primary_booking = booking
+
+        # Handle activities if provided
+        selected_activities = request.data.get('selected_activities', [])
+        activities_total = sum(float(a.get('price', 0)) for a in selected_activities)
+        total_invoice_amount += Decimal(str(activities_total))
+
+        # Create ONE consolidated Invoice
         try:
             from finance.models import Invoice, InvoiceItem
+            import uuid
+            
             invoice = Invoice.objects.create(
-                booking=booking,
-                invoice_number=f"INV-ROOM-{uuid.uuid4().hex[:6].upper()}",
-                total_ht=booking.total_price,
-                total_ft=booking.total_price,
-                balance_ptd=booking.total_price,
+                booking=primary_booking,
+                invoice_number=f"INV-GRP-{uuid.uuid4().hex[:6].upper()}",
+                total_ht=total_invoice_amount,
+                total_ft=total_invoice_amount,
+                balance_ptd=total_invoice_amount,
                 is_paid=False
             )
-            InvoiceItem.objects.create(
-                invoice=invoice,
-                description=f"Room Stay: {booking.room.room_number} ({booking.adults} Adults, {booking.children} Children)",
-                quantity=1,
-                unit_price=booking.total_price,
-                total_line=booking.total_price
-            )
+            
+            # Add line items for each room
+            for b in bookings:
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    description=f"Accommodation: {b.room.room_type} ({b.room.room_number})",
+                    quantity=1,
+                    unit_price=b.total_price,
+                    total_line=b.total_price
+                )
+            
+            # Add line items for activities
+            for activity in selected_activities:
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    description=f"Activity: {activity.get('title')}",
+                    quantity=1,
+                    unit_price=Decimal(str(activity.get('price'))),
+                    total_line=Decimal(str(activity.get('price')))
+                )
+                
         except Exception as e:
-            print(f"Failed to create room invoice: {e}")
+            print(f"Failed to create consolidated invoice: {e}")
+
+        return Response(self.get_serializer(bookings, many=True).data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        # This is now handled by the overridden create method
+        pass
 
 class GlobalSearchView(APIView):
     permission_classes = [permissions.IsAuthenticated]

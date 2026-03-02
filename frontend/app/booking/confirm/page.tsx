@@ -26,10 +26,18 @@ export default function BookingConfirm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
 
-    if (!state.room) {
+    if (state.rooms.length === 0) {
         if (typeof window !== 'undefined') router.push('/rooms');
         return null;
     }
+
+    const nights = state.checkIn && state.checkOut
+        ? Math.max(1, Math.ceil((new Date(state.checkOut).getTime() - new Date(state.checkIn).getTime()) / (1000 * 60 * 60 * 24)))
+        : 0;
+
+    const roomsTotal = state.rooms.reduce((sum, room) => sum + parseFloat(room.price_per_night) * nights, 0);
+    const activitiesTotal = state.selectedActivities.reduce((sum, a) => sum + parseFloat(a.price), 0);
+    const grandTotal = roomsTotal + activitiesTotal;
 
     const handleFinalConfirm = async () => {
         setIsSubmitting(true);
@@ -38,15 +46,16 @@ export default function BookingConfirm() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    room: state.room?.id,
+                    room_ids: state.rooms.map(r => r.id),
                     guest_name: state.guestName,
                     guest_email: state.guestEmail,
                     guest_phone: state.guestPhone,
-                    check_in: state.checkIn || '2026-10-23', // Demo dates if not picked
-                    check_out: state.checkOut || '2026-10-25',
+                    check_in: state.checkIn,
+                    check_out: state.checkOut,
                     adults: state.adults,
                     children: state.children,
                     special_requests: state.specialRequests,
+                    selected_activities: state.selectedActivities,
                     status: 'PENDING'
                 })
             });
@@ -54,10 +63,12 @@ export default function BookingConfirm() {
             if (response.ok) {
                 setIsConfirmed(true);
             } else {
-                alert('Booking failed. Please try again.');
+                const errorData = await response.json();
+                alert(`Booking failed: ${errorData.detail || 'Please try again.'}`);
             }
         } catch (error) {
             console.error('Error submitting booking:', error);
+            alert('An unexpected error occurred.');
         } finally {
             setIsSubmitting(false);
         }
@@ -156,8 +167,8 @@ export default function BookingConfirm() {
                                         </div>
                                         <div>
                                             <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stay Duration</div>
-                                            <div className="font-black text-gray-900 text-lg mb-1">2 Nights</div>
-                                            <div className="text-xs font-bold text-gray-500">Oct 23, 2026 — Oct 25, 2026</div>
+                                            <div className="font-black text-gray-900 text-lg mb-1">{nights} Nights</div>
+                                            <div className="text-xs font-bold text-gray-500">{state.checkIn} — {state.checkOut}</div>
                                         </div>
                                     </div>
 
@@ -200,29 +211,35 @@ export default function BookingConfirm() {
                         <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-gray-100">
                             <h3 className="text-2xl font-black tracking-tighter mb-8">Final Summary</h3>
 
-                            <div className="flex gap-4 mb-8">
-                                <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0">
-                                    <img src={state.room.image_url || "/placeholder.jpg"} className="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest mb-1">{state.room.category}</div>
-                                    <h4 className="font-black text-gray-900">{state.room.room_type}</h4>
-                                    <p className="text-xs font-bold text-gray-400">{state.room.room_number}</p>
-                                </div>
+                            <div className="space-y-6 mb-8">
+                                {state.rooms.map((room) => (
+                                    <div key={room.id} className="flex gap-4">
+                                        <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0">
+                                            <img src={room.image_url || "/placeholder.jpg"} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest mb-1">{room.category}</div>
+                                            <h4 className="font-black text-gray-900 text-sm">{room.room_type}</h4>
+                                            <p className="text-[10px] font-bold text-gray-400">${room.price_per_night} x {nights}</p>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             <div className="space-y-4 mb-10">
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="font-bold text-gray-500">Accommodation Price</span>
-                                    <span className="font-black text-gray-900">${state.room.price_per_night} x 2</span>
+                                    <span className="font-bold text-gray-500">Accommodation Subtotal</span>
+                                    <span className="font-black text-gray-900">${roomsTotal.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="font-bold text-gray-500">Service Charge</span>
-                                    <span className="font-black text-emerald-500">FREE</span>
-                                </div>
-                                <div className="pt-4 border-t border-gray-50 flex justify-between items-end">
+                                {activitiesTotal > 0 && (
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-gray-500">Selected Activities</span>
+                                        <span className="font-black text-gray-900">${activitiesTotal.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="pt-4 border-t-2 border-gray-900 flex justify-between items-end">
                                     <span className="text-xs font-black uppercase tracking-widest text-gray-400">Grand Total</span>
-                                    <span className="text-4xl font-black text-gray-900 tracking-tighter">${parseFloat(state.room.price_per_night) * 2}</span>
+                                    <span className="text-4xl font-black text-gray-900 tracking-tighter">${grandTotal.toFixed(2)}</span>
                                 </div>
                             </div>
 

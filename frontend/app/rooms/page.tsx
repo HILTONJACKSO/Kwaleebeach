@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useBooking } from '@/context/BookingContext';
 import {
     Star,
     Users,
@@ -15,7 +16,9 @@ import {
     LayoutGrid,
     List,
     Tent,
-    Hotel
+    Hotel,
+    CheckCircle2,
+    ShoppingBag
 } from 'lucide-react';
 
 interface Room {
@@ -37,6 +40,7 @@ export default function RoomsPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'ALL' | 'ROOM' | 'TENT'>('ALL');
     const [view, setView] = useState<'grid' | 'list'>('grid');
+    const { state, toggleRoom } = useBooking();
 
     useEffect(() => {
         fetchRooms();
@@ -77,8 +81,10 @@ export default function RoomsPage() {
         );
     }
 
+    const isRoomSelected = (id: number) => state.rooms.some(r => r.id === id);
+
     return (
-        <div className="bg-white min-h-screen">
+        <div className="bg-white min-h-screen relative">
             {/* Header */}
             <div className="relative h-80 bg-gray-900 flex items-center justify-center">
                 <img
@@ -137,7 +143,7 @@ export default function RoomsPage() {
                 {view === 'grid' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                         {filteredRooms.map((room) => (
-                            <div key={room.id} className="group flex flex-col h-full bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all hover:scale-[1.02]">
+                            <div key={room.id} className={`group flex flex-col h-full bg-white rounded-[2.5rem] overflow-hidden border transition-all hover:scale-[1.02] ${isRoomSelected(room.id) ? 'border-[var(--color-primary)] shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-2xl'}`}>
                                 <div className="relative h-64 overflow-hidden">
                                     <img
                                         src={room.image_url || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80"}
@@ -147,6 +153,11 @@ export default function RoomsPage() {
                                     <div className="absolute top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-gray-900 shadow-xl">
                                         {room.category === 'TENT' ? 'Luxury Tent' : 'Boutique Room'}
                                     </div>
+                                    {isRoomSelected(room.id) && (
+                                        <div className="absolute top-6 right-6 bg-[var(--color-primary)] text-white p-2 rounded-full shadow-xl">
+                                            <CheckCircle2 size={20} />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="p-8 flex flex-col flex-1">
@@ -182,11 +193,16 @@ export default function RoomsPage() {
                                                 <Users size={16} className="text-gray-300" /> {room.capacity_adults} Adults
                                             </div>
                                         </div>
-                                        <Link href={`/booking/details?room=${room.id}`}>
-                                            <button className="bg-gray-900 text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all flex items-center gap-2">
-                                                Book Now <ArrowRight size={16} />
-                                            </button>
-                                        </Link>
+                                        <button
+                                            onClick={() => toggleRoom(room as any)}
+                                            className={`px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all flex items-center gap-2 ${isRoomSelected(room.id)
+                                                ? 'bg-[var(--color-primary)] text-white'
+                                                : 'bg-gray-900 text-white hover:bg-[var(--color-primary)]'
+                                                }`}
+                                        >
+                                            {isRoomSelected(room.id) ? 'Selected' : 'Select Stay'}
+                                            {isRoomSelected(room.id) ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -196,13 +212,18 @@ export default function RoomsPage() {
                     /* List View */
                     <div className="space-y-8">
                         {filteredRooms.map((room) => (
-                            <div key={room.id} className="group flex flex-col lg:flex-row bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all lg:h-72">
-                                <div className="lg:w-1/3 h-64 lg:h-full overflow-hidden">
+                            <div key={room.id} className={`group flex flex-col lg:flex-row bg-white rounded-[2.5rem] overflow-hidden border transition-all lg:h-72 ${isRoomSelected(room.id) ? 'border-[var(--color-primary)] shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-2xl'}`}>
+                                <div className="lg:w-1/3 h-64 lg:h-full overflow-hidden relative">
                                     <img
                                         src={room.image_url || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80"}
                                         alt={room.room_type}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
+                                    {isRoomSelected(room.id) && (
+                                        <div className="absolute top-6 right-6 bg-[var(--color-primary)] text-white p-2 rounded-full shadow-xl">
+                                            <CheckCircle2 size={20} />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="p-8 lg:p-10 flex-1 flex flex-col">
                                     <div className="flex justify-between items-start mb-4">
@@ -230,15 +251,34 @@ export default function RoomsPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                        <Link href={`/booking/details?room=${room.id}`}>
-                                            <button className="bg-gray-900 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all flex items-center gap-2">
-                                                Reserve Suite <ArrowRight size={16} />
-                                            </button>
-                                        </Link>
+                                        <button
+                                            onClick={() => toggleRoom(room as any)}
+                                            className={`px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all flex items-center gap-2 ${isRoomSelected(room.id)
+                                                ? 'bg-[var(--color-primary)] text-white'
+                                                : 'bg-gray-900 text-white hover:bg-[var(--color-primary)]'
+                                                }`}
+                                        >
+                                            {isRoomSelected(room.id) ? 'Selected Suite' : 'Select Suite'}
+                                            {isRoomSelected(room.id) ? <CheckCircle2 size={16} /> : <ArrowRight size={16} />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {state.rooms.length > 0 && (
+                    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-bounce-subtle">
+                        <Link href="/booking/details">
+                            <button className="bg-gray-900 text-white px-10 py-5 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] shadow-2xl flex items-center gap-4 hover:bg-[var(--color-primary)] transition-all">
+                                <div className="flex items-center gap-2">
+                                    <ShoppingBag size={20} className="text-[var(--color-primary)]" />
+                                    <span>Review Stays ({state.rooms.length})</span>
+                                </div>
+                                <ArrowRight size={20} />
+                            </button>
+                        </Link>
                     </div>
                 )}
 
