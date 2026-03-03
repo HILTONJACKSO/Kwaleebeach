@@ -127,6 +127,7 @@ export default function MenuPage() {
                 // Success
                 clearCart();
                 showModal("Order Success", "Your order has been placed successfully! You can track it in the active orders section.");
+                setIsCartOpen(false);
                 // Trigger immediate refresh of orders
                 const ordersRes = await fetch(`/api/inventory/orders/active/?room=${roomNumber}`);
                 if (ordersRes.ok) setActiveOrders(await ordersRes.json());
@@ -138,7 +139,6 @@ export default function MenuPage() {
             showNotification("Error connecting to server.", 'error');
         } finally {
             setIsPlacingOrder(false);
-            if (res?.ok) setIsCartOpen(false);
         }
     };
 
