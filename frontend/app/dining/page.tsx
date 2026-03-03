@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ShoppingBag, Plus, Minus, ArrowRight, Clock, CheckCircle, ChefHat, Utensils } from 'lucide-react';
+import { Search, Filter, ShoppingBag, Plus, Minus, ArrowRight, Clock, CheckCircle, ChefHat, Utensils, X } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useUI } from '@/context/UIContext';
 
@@ -45,6 +45,8 @@ export default function MenuPage() {
     const [locationType, setLocationType] = useState<'ROOM' | 'TABLE' | 'BEACH' | 'POOL'>('ROOM');
     const [guestName, setGuestName] = useState(''); // Optional, for display
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
 
     // Initial Data Fetch
     useEffect(() => {
@@ -137,6 +139,7 @@ export default function MenuPage() {
             showNotification("Error connecting to server.", 'error');
         } finally {
             setIsPlacingOrder(false);
+            if (res?.ok) setIsCartOpen(false);
         }
     };
 
@@ -178,7 +181,7 @@ export default function MenuPage() {
         <div className="h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 flex flex-col md:flex-row font-sans relative">
 
             {/* --- LEFT SIDE: MENU & TRACKER (70%) --- */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 h-full">
+            <div className={`flex-1 overflow-y-auto p-4 md:p-8 h-full transition-all ${isCartOpen ? 'hidden lg:block blur-sm lg:blur-none' : 'block'}`}>
 
                 {/* 1. Header & Search */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -289,12 +292,47 @@ export default function MenuPage() {
                 </div>
             </div>
 
-            {/* --- RIGHT SIDE: CART SIDEBAR --- */}
-            <div className="w-full md:w-[400px] bg-white border-l border-gray-200 shadow-xl flex flex-col h-full overflow-hidden text-gray-900 z-40">
+            {/* --- MOBILE/TABLET FLOATING CART ICON --- */}
+            <div className="lg:hidden fixed bottom-6 right-6 z-50">
+                <button
+                    onClick={() => setIsCartOpen(true)}
+                    className="relative bg-gray-900 text-white p-5 rounded-[2rem] shadow-2xl flex items-center justify-center hover:bg-[var(--color-primary)] transition-all active:scale-95 border-2 border-white/20 backdrop-blur-md"
+                >
+                    <ShoppingBag size={28} />
+                    {cartItems.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-[var(--color-primary)] text-white text-[10px] font-black w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-lg">
+                            {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+                        </span>
+                    )}
+                </button>
+            </div>
+
+            {/* --- CART DRAWER OVERLAY --- */}
+            {isCartOpen && (
+                <div
+                    className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+                    onClick={() => setIsCartOpen(false)}
+                />
+            )}
+
+            {/* --- RIGHT SIDE: CART SIDEBAR / DRAWER --- */}
+            <div className={`
+                fixed lg:relative inset-y-0 right-0 w-full sm:w-[450px] lg:w-[400px] bg-white border-l border-gray-200 shadow-2xl 
+                flex flex-col h-full overflow-hidden text-gray-900 z-[110] transition-transform duration-500 ease-in-out
+                ${isCartOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+            `}>
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 bg-white">
-                    <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
-                    <p className="text-sm text-gray-500">Review selection before confirm</p>
+                <div className="p-6 border-b border-gray-100 bg-white flex justify-between items-center shrink-0">
+                    <div>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">Order Details</h2>
+                        <p className="text-xs text-gray-400 font-medium">Review selection before confirm</p>
+                    </div>
+                    <button
+                        onClick={() => setIsCartOpen(false)}
+                        className="lg:hidden p-3 hover:bg-gray-100 rounded-2xl transition-colors text-gray-400 group"
+                    >
+                        <X size={24} className="group-hover:rotate-90 transition-transform" />
+                    </button>
                 </div>
 
                 {/* Items List (Scrollable) */}
