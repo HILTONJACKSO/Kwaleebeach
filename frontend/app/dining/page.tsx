@@ -46,7 +46,6 @@ export default function MenuPage() {
     const [guestName, setGuestName] = useState(''); // Optional, for display
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const [isCartOpen, setIsCartOpen] = useState(false);
 
     // Initial Data Fetch
     useEffect(() => {
