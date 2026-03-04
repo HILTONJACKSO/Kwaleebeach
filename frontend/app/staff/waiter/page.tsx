@@ -50,6 +50,7 @@ function WaiterPageContent() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [submittingOrder, setSubmittingOrder] = useState(false);
+    const [isAddingMore, setIsAddingMore] = useState(false);
 
     const getAuthHeaders = (): Record<string, string> => {
         const token = localStorage.getItem('yarvo_token');
@@ -269,7 +270,7 @@ function WaiterPageContent() {
                 <div className="flex flex-wrap items-center gap-4">
                     {/* New Order Button */}
                     <button
-                        onClick={() => { clearCart(); setIsOrdering(true); }}
+                        onClick={() => { clearCart(); setSelectedTable(''); setIsAddingMore(false); setIsOrdering(true); }}
                         className="bg-gray-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-[var(--color-primary)] transition-all shadow-xl shadow-gray-200"
                     >
                         <Plus size={18} /> Take New Order
@@ -315,7 +316,22 @@ function WaiterPageContent() {
                                     </span>
                                 </div>
                                 <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{getLocationLabel(item.location_type)}</div>
-                                <div className="text-xl font-black text-gray-900 mb-3">#{item.room}</div>
+                                <div className="text-xl font-black text-gray-900 mb-3 flex justify-between items-center">
+                                    <span>#{item.room}</span>
+                                    <button
+                                        onClick={() => {
+                                            clearCart();
+                                            setSelectedTable(item.room);
+                                            setOrderLocation(item.location_type);
+                                            setIsAddingMore(true);
+                                            setIsOrdering(true);
+                                        }}
+                                        className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                        title="Add more to this bill"
+                                    >
+                                        <Plus size={16} />
+                                    </button>
+                                </div>
                                 <div className="pt-3 border-t border-gray-50 flex justify-between items-center text-sm">
                                     <span className="text-gray-400 font-bold uppercase text-[9px]">Bill Total</span>
                                     <span className="font-black text-gray-900">${parseFloat(item.total_bill).toFixed(2)}</span>
@@ -560,8 +576,9 @@ function WaiterPageContent() {
                                                 {['TABLE', 'ROOM', 'POOL', 'BEACH'].map(loc => (
                                                     <button
                                                         key={loc}
+                                                        disabled={isAddingMore}
                                                         onClick={() => setOrderLocation(loc as any)}
-                                                        className={`py-2 text-[10px] font-black rounded-xl border transition-all ${orderLocation === loc ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-900'}`}
+                                                        className={`py-2 text-[10px] font-black rounded-xl border transition-all ${orderLocation === loc ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200' + (isAddingMore ? '' : ' hover:border-gray-900')} ${isAddingMore ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     >
                                                         {loc}
                                                     </button>
@@ -572,11 +589,12 @@ function WaiterPageContent() {
                                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 mb-2 block">{orderLocation} Number</label>
                                             <input
                                                 type="text"
-                                                autoFocus
+                                                readOnly={isAddingMore}
+                                                autoFocus={!isAddingMore}
                                                 value={selectedTable}
                                                 onChange={(e) => setSelectedTable(e.target.value)}
                                                 placeholder={`e.g. ${orderLocation === 'TABLE' ? '5' : '101'}`}
-                                                className="w-full px-5 py-3 rounded-xl border-2 border-gray-100 focus:border-[var(--color-primary)] outline-none font-bold text-gray-900 transition-all"
+                                                className={`w-full px-5 py-3 rounded-xl border-2 border-gray-100 focus:border-[var(--color-primary)] outline-none font-bold text-gray-900 transition-all ${isAddingMore ? 'bg-gray-50 cursor-not-allowed text-gray-400 border-transparent' : ''}`}
                                             />
                                         </div>
                                     </div>

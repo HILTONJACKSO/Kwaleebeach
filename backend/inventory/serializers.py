@@ -122,19 +122,35 @@ class OrderSerializer(serializers.ModelSerializer):
             order.save()
             print(f"DEBUG: Order #{order.id} total updated to {total}")
 
-            # Create Invoice in Finance App (Non-Critical)
+            # Create or Update Invoice in Finance App
             try:
                 active_booking = Booking.objects.filter(room__room_number=order.room, is_checked_in=True).last()
+                location_label = f"{order.get_location_type_display()} {order.room}" if order.room and order.room != 'Walk-in' else "Walk-in"
                 
-                invoice = Invoice.objects.create(
-                    booking=active_booking,
-                    reference_location=f"{order.get_location_type_display()} {order.room}" if order.room and order.room != 'Walk-in' else "Walk-in",
-                    invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
-                    total_ht=total,
-                    total_ft=total,
-                    balance_ptd=total,
+                # Try to find an existing UNPAID invoice for this specific table/location
+                # This allows "Add More" functionality to consolidate under one bill
+                invoice = Invoice.objects.filter(
+                    reference_location=location_label,
                     is_paid=False
-                )
+                ).last()
+                
+                if invoice:
+                    print(f"DEBUG: Found existing unpaid invoice {invoice.invoice_number} for {location_label}. Appending items.")
+                    invoice.total_ht += total
+                    invoice.total_ft += total
+                    invoice.balance_ptd += total
+                    invoice.save()
+                else:
+                    print(f"DEBUG: No existing unpaid invoice for {location_label}. Creating new one.")
+                    invoice = Invoice.objects.create(
+                        booking=active_booking,
+                        reference_location=location_label,
+                        invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
+                        total_ht=total,
+                        total_ft=total,
+                        balance_ptd=total,
+                        is_paid=False
+                    )
                 
                 for item in order.items.all():
                     InvoiceItem.objects.create(
@@ -145,9 +161,9 @@ class OrderSerializer(serializers.ModelSerializer):
                         unit_price=item.price_at_time,
                         total_line=item.quantity * item.price_at_time
                     )
-                print(f"DEBUG: Invoice created for Order #{order.id}")
+                print(f"DEBUG: Invoice {invoice.invoice_number} updated/created for Order #{order.id}")
             except Exception as inv_e:
-                print(f"DEBUG: Non-critical invoice creation failed for Order #{order.id}: {inv_e}")
+                print(f"DEBUG: Non-critical invoice update failed for Order #{order.id}: {inv_e}")
 
             return order
 
