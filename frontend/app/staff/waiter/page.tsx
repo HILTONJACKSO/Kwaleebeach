@@ -216,7 +216,7 @@ function WaiterPageContent() {
 
         setSubmittingOrder(true);
         const orderData = {
-            room: selectedTable,
+            room: selectedTable.toUpperCase(),
             location_type: orderLocation,
             items: cartItems.map(item => ({
                 menu_item: item.id,
@@ -619,7 +619,7 @@ function WaiterPageContent() {
                                                 readOnly={isAddingMore}
                                                 autoFocus={!isAddingMore}
                                                 value={selectedTable}
-                                                onChange={(e) => setSelectedTable(e.target.value)}
+                                                onChange={(e) => setSelectedTable(e.target.value.toUpperCase())}
                                                 placeholder={`e.g. ${orderLocation === 'TABLE' ? '5' : '101'}`}
                                                 className={`w-full px-5 py-3 rounded-xl border-2 border-gray-100 focus:border-[var(--color-primary)] outline-none font-bold text-gray-900 transition-all ${isAddingMore ? 'bg-gray-50 cursor-not-allowed text-gray-400 border-transparent' : ''}`}
                                             />

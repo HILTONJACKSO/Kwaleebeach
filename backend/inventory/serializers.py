@@ -100,6 +100,11 @@ class OrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             items_data = validated_data.pop('items')
+            
+            # Normalize room/table to uppercase to avoid duplicates like T5 vs t5
+            if 'room' in validated_data and validated_data['room']:
+                validated_data['room'] = validated_data['room'].upper()
+                
             order = Order.objects.create(**validated_data)
             print(f"DEBUG: Created Order #{order.id} for room {order.room}")
             

@@ -153,18 +153,31 @@ class OrderViewSet(viewsets.ModelViewSet):
         Returns a summary of active bills grouped by table/room.
         Includes count of active orders and total unpaid amount.
         """
-        from django.db.models import Sum, Count
+        from django.db.models.functions import Upper
+        from django.db.models import F
         
         # We consider 'PENDING', 'PREPARING', 'READY', 'SERVED' as active
         # 'RETURNED' is excluded.
         active_orders = Order.objects.exclude(status='RETURNED')
         
-        summary = active_orders.values('room', 'location_type').annotate(
+        summary = active_orders.annotate(
+            room_normalized=Upper('room')
+        ).values('room_normalized', 'location_type').annotate(
             total_bill=Sum('total_amount'),
             order_count=Count('id')
-        ).order_by('room')
+        ).order_by('room_normalized')
+
+        # Map to 'room' key for frontend compatibility
+        formatted_summary = [
+            {
+                'room': item['room_normalized'],
+                'location_type': item['location_type'],
+                'total_bill': item['total_bill'],
+                'order_count': item['order_count']
+            } for item in summary
+        ]
         
-        return Response(summary)
+        return Response(formatted_summary)
 
 class OrderReturnViewSet(viewsets.ModelViewSet):
     queryset = OrderReturn.objects.all().order_by('-requested_at')
