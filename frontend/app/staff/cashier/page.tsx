@@ -87,9 +87,31 @@ function CashierDashboardContent() {
 
     const pendingTotal = invoices.reduce((acc, inv) => !inv.is_paid ? acc + parseFloat(inv.total_ft) : acc, 0);
     const collectedToday = invoices.reduce((acc, inv) => {
-        const payments = inv.payments?.filter((p: any) => new Date(p.date_paid).toDateString() === new Date().toDateString()) || [];
+        const payments = inv.payments?.filter((p: any) => {
+            const pDate = new Date(p.date_paid).toDateString();
+            const today = new Date().toDateString();
+            return pDate === today;
+        }) || [];
         return acc + payments.reduce((p_acc: any, p: any) => p_acc + parseFloat(p.amount), 0);
     }, 0);
+
+    // Local breakdown for immediate UI updates
+    const localCollectionBreakdown = invoices.reduce((acc: any, inv) => {
+        const payments = inv.payments?.filter((p: any) => {
+            const pDate = new Date(p.date_paid).toDateString();
+            const today = new Date().toDateString();
+            return pDate === today;
+        }) || [];
+
+        payments.forEach((p: any) => {
+            const m = p.mode;
+            acc[m] = (acc[m] || 0) + parseFloat(p.amount);
+        });
+        return acc;
+    }, {});
+
+    const displayCollectionTotal = Math.max(collectedToday, stats?.today_collection || 0);
+    const displayBreakdown = Object.keys(localCollectionBreakdown).length > 0 ? localCollectionBreakdown : (stats?.collection_breakdown || {});
 
     return (
         <div className="space-y-10">
@@ -112,10 +134,10 @@ function CashierDashboardContent() {
                         </div>
                     </div>
                     <div className="text-[10px] font-black text-emerald-800/60 uppercase tracking-[0.2em] mb-1">Today's Collection</div>
-                    <div className="text-2xl lg:text-3xl font-black text-gray-900">${stats?.today_collection.toFixed(2) || '0.00'}</div>
-                    {stats?.collection_breakdown && (
+                    <div className="text-2xl lg:text-3xl font-black text-gray-900">${displayCollectionTotal.toFixed(2)}</div>
+                    {Object.entries(displayBreakdown).length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
-                            {Object.entries(stats.collection_breakdown).map(([mode, amount]: [any, any]) => (
+                            {Object.entries(displayBreakdown).map(([mode, amount]: [any, any]) => (
                                 <span key={mode} className="text-[9px] font-black text-emerald-700/70 uppercase">
                                     {mode.replace('_', ' ')}: ${amount.toFixed(2)}
                                 </span>
@@ -140,8 +162,10 @@ function CashierDashboardContent() {
                             <CreditCard className="text-blue-700" size={24} />
                         </div>
                     </div>
-                    <div className="text-[10px] font-black text-blue-800/60 uppercase tracking-[0.2em] mb-1">Visa Processing</div>
-                    <div className="text-2xl lg:text-3xl font-black text-gray-900">Active</div>
+                    <div className="text-[10px] font-black text-blue-800/60 uppercase tracking-[0.2em] mb-1">Visa Collection (Today)</div>
+                    <div className="text-2xl lg:text-3xl font-black text-gray-900">
+                        ${(displayBreakdown?.['VISA'] || 0).toFixed(2)}
+                    </div>
                 </div>
 
                 <div className="bg-indigo-100 p-6 rounded-[2rem] md:rounded-[2.5rem] border border-indigo-200/50 shadow-sm transition-all md:hover:scale-[1.02]">
@@ -152,7 +176,7 @@ function CashierDashboardContent() {
                     </div>
                     <div className="text-[10px] font-black text-indigo-800/60 uppercase tracking-[0.2em] mb-1">MOMO Collection (Today)</div>
                     <div className="text-2xl lg:text-3xl font-black text-gray-900">
-                        ${((stats?.collection_breakdown?.MOMO_LONESTAR || 0) + (stats?.collection_breakdown?.MOMO_ORANGE || 0)).toFixed(2)}
+                        ${((displayBreakdown?.MOMO_LONESTAR || 0) + (displayBreakdown?.MOMO_ORANGE || 0)).toFixed(2)}
                     </div>
                 </div>
             </div>
@@ -464,8 +488,8 @@ function CashierDashboardContent() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${ret.status === 'APPROVED_ADMIN' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                                        ret.status === 'REJECTED' ? 'bg-red-50 text-red-600 border border-red-100' :
-                                                            'bg-orange-50 text-orange-600 border border-orange-100'
+                                                    ret.status === 'REJECTED' ? 'bg-red-50 text-red-600 border border-red-100' :
+                                                        'bg-orange-50 text-orange-600 border border-orange-100'
                                                     }`}>
                                                     {ret.status.replace('_', ' ')}
                                                 </span>
