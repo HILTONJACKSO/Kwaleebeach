@@ -1,5 +1,6 @@
 from django.db import models
 from pms.models import Booking
+from django.apps import apps
 
 class Account(models.Model):
     ACCOUNT_TYPES = [
@@ -94,11 +95,23 @@ class Invoice(models.Model):
         
         super().save(*args, **kwargs)
 
+    @property
+    def is_service_ready(self):
+        """
+        Checks if all items in this invoice that are linked to Restaurant Orders 
+        have been marked as SERVED.
+        """
+        for item in self.items.all():
+            if item.related_order and item.related_order.status != 'SERVED':
+                return False
+        return True
+
     def __str__(self):
         return f"Invoice {self.invoice_number}"
 
 class InvoiceItem(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
+    related_order = models.ForeignKey('inventory.Order', on_delete=models.SET_NULL, null=True, blank=True, related_name='invoice_items')
     description = models.CharField(max_length=255)
     quantity = models.IntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)

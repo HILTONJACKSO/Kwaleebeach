@@ -44,6 +44,6 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = [
             'id', 'invoice_number', 'date_issued', 'total_ht', 'total_ft', 
-            'balance_ptd', 'is_paid', 'items', 'payments', 'guest_name', 'room_number',
+            'balance_ptd', 'is_paid', 'is_service_ready', 'items', 'payments', 'guest_name', 'room_number',
             'reference_location', 'discount_type', 'discount_amount', 'discount_reason'
         ]

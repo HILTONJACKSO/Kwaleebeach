@@ -129,6 +129,7 @@ class OrderSerializer(serializers.ModelSerializer):
                 for item in order.items.all():
                     InvoiceItem.objects.create(
                         invoice=invoice,
+                        related_order=order,
                         description=f"{item.menu_item.name} (Order #{order.id})",
                         quantity=item.quantity,
                         unit_price=item.price_at_time,

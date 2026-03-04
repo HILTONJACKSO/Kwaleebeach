@@ -39,6 +39,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not mode:
             return Response({'error': 'Payment mode is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+        if not invoice.is_service_ready:
+            return Response(
+                {'error': 'Cannot process payment: Some food/drink items in this invoice have not been served yet.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # Create Payment
         Payment.objects.create(
             invoice=invoice,
