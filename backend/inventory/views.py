@@ -135,6 +135,25 @@ class OrderViewSet(viewsets.ModelViewSet):
         )
         return Response({'status': 'Return requested'})
 
+    @action(detail=False, methods=['get'], url_path='bill-summary')
+    def bill_summary(self, request):
+        """
+        Returns a summary of active bills grouped by table/room.
+        Includes count of active orders and total unpaid amount.
+        """
+        from django.db.models import Sum, Count
+        
+        # We consider 'PENDING', 'PREPARING', 'READY', 'SERVED' as active
+        # 'RETURNED' is excluded.
+        active_orders = Order.objects.exclude(status='RETURNED')
+        
+        summary = active_orders.values('room', 'location_type').annotate(
+            total_bill=Sum('total_amount'),
+            order_count=Count('id')
+        ).order_by('room')
+        
+        return Response(summary)
+
 class OrderReturnViewSet(viewsets.ModelViewSet):
     queryset = OrderReturn.objects.all().order_by('-requested_at')
     serializer_class = OrderReturnSerializer
