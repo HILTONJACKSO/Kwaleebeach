@@ -209,11 +209,19 @@ class OrderReturnViewSet(viewsets.ModelViewSet):
         
         if invoice:
             for return_item in ret.return_items.all():
-                # Find corresponding InvoiceItem
-                # We can match by description or by linking OrderItem to InvoiceItem (preferred if we had the field)
-                # Since we don't have a direct link yet, we'll match by description or just find items related to this order
+                # Update OrderItem (The source)
+                oi = return_item.order_item
+                if oi.quantity > return_item.quantity:
+                    oi.quantity -= return_item.quantity
+                    oi.save()
+                else:
+                    # If whole quantity returned, we could delete it, but better to set to 0 
+                    # for history, or just delete if that's the system pattern.
+                    # Current pattern seems to be deletion or decrement.
+                    oi.delete()
+
+                # Update InvoiceItem (The billing)
                 inv_items = invoice.items.filter(related_order=order, description__contains=return_item.order_item.menu_item.name)
-                
                 for inv_item in inv_items:
                     if inv_item.quantity > return_item.quantity:
                         inv_item.quantity -= return_item.quantity
@@ -222,10 +230,14 @@ class OrderReturnViewSet(viewsets.ModelViewSet):
                     else:
                         inv_item.delete()
             
+            # Recalculate Order Total
+            order.total_amount = sum(item.quantity * item.price_at_time for item in order.items.all())
+            order.save()
+
             # Recalculate invoice totals
             new_total = sum(item.total_line for item in invoice.items.all())
             invoice.total_ht = new_total
-            invoice.total_ft = new_total # Simplifying tax logic for now
+            invoice.total_ft = new_total
             invoice.balance_ptd = new_total
             invoice.save()
 
