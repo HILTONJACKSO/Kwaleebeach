@@ -407,6 +407,19 @@ function WaiterPageContent() {
                                         )}
                                         <button
                                             onClick={() => {
+                                                clearCart();
+                                                setSelectedTable(order.room);
+                                                setOrderLocation(order.location_type as any);
+                                                setIsAddingMore(true);
+                                                setIsOrdering(true);
+                                            }}
+                                            className="p-4 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                            title="Add more to this table"
+                                        >
+                                            <Plus size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => {
                                                 setSelectedReturnOrder(order.id);
                                                 setSelectedReturnOrderItems(order.items);
                                                 setSelectedItemsForReturn({});
@@ -444,12 +457,26 @@ function WaiterPageContent() {
                                 <div className="text-[11px] font-medium text-gray-500 mb-3 truncate">
                                     {getLocationLabel(order.location_type)}: {order.room}
                                 </div>
-                                <Link
-                                    href={`/staff/waiter/return/${order.id}`}
-                                    className="w-full p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest"
-                                >
-                                    <RefreshCw size={12} /> Request Return
-                                </Link>
+                                <div className="flex gap-2">
+                                    <Link
+                                        href={`/staff/waiter/return/${order.id}`}
+                                        className="flex-1 p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest"
+                                    >
+                                        <RefreshCw size={12} /> Return
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            clearCart();
+                                            setSelectedTable(order.room);
+                                            setOrderLocation(order.location_type as any);
+                                            setIsAddingMore(true);
+                                            setIsOrdering(true);
+                                        }}
+                                        className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest"
+                                    >
+                                        <Plus size={12} /> Add More
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
