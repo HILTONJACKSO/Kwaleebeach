@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MenuCategory, MenuItem, Order, OrderItem, InventoryItem, InventoryStock, StockTransfer, OrderReturn, RestaurantTable
+from .models import MenuCategory, MenuItem, Order, OrderItem, InventoryItem, InventoryStock, StockTransfer, OrderReturn, OrderReturnItem, RestaurantTable
 from finance.models import Invoice, InvoiceItem
 from pms.models import Booking
 import uuid
@@ -66,16 +66,26 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'menu_item', 'menu_item_name', 'preparation_station', 'quantity', 'price_at_time']
         read_only_fields = ['price_at_time']
 
+class OrderReturnItemSerializer(serializers.ModelSerializer):
+    menu_item_name = serializers.CharField(source='order_item.menu_item.name', read_only=True)
+    
+    class Meta:
+        model = OrderReturnItem
+        fields = ['id', 'order_item', 'menu_item_name', 'quantity']
+
 class OrderReturnSerializer(serializers.ModelSerializer):
     order_total = serializers.DecimalField(source='order.total_amount', max_digits=12, decimal_places=2, read_only=True)
     room = serializers.CharField(source='order.room', read_only=True)
     items_summary = serializers.SerializerMethodField()
+    return_items = OrderReturnItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = OrderReturn
         fields = '__all__'
 
     def get_items_summary(self, obj):
+        if obj.return_items.exists():
+            return ", ".join([f"{i.quantity}x {i.order_item.menu_item.name}" for i in obj.return_items.all()])
         return ", ".join([f"{i.quantity}x {i.menu_item.name}" for i in obj.order.items.all()])
 
 class OrderSerializer(serializers.ModelSerializer):

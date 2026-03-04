@@ -28,6 +28,7 @@ function CashierDashboardContent() {
     const [stats, setStats] = useState<any>(null);
     const [activeOrders, setActiveOrders] = useState<any[]>([]);
     const [activePasses, setActivePasses] = useState<any[]>([]);
+    const [returnHistory, setReturnHistory] = useState<any[]>([]);
 
     const getAuthHeaders = (): Record<string, string> => {
         const token = localStorage.getItem('yarvo_token');
@@ -43,11 +44,12 @@ function CashierDashboardContent() {
     const fetchData = async () => {
         try {
             const authHeaders = getAuthHeaders();
-            const [invRes, orderRes, passRes, statRes] = await Promise.all([
+            const [invRes, orderRes, passRes, statRes, historyRes] = await Promise.all([
                 fetch('/api/finance/invoices/', { headers: authHeaders }),
                 fetch('/api/inventory/orders/active/', { headers: authHeaders }),
                 fetch('/api/recreation/passes/', { headers: authHeaders }),
-                fetch('/api/inventory/reports/', { headers: authHeaders })
+                fetch('/api/inventory/reports/', { headers: authHeaders }),
+                fetch('/api/inventory/returns/history/', { headers: authHeaders })
             ]);
 
             if (invRes.status === 401 || orderRes.status === 401 || passRes.status === 401 || statRes.status === 401) {
@@ -57,6 +59,7 @@ function CashierDashboardContent() {
             if (invRes.ok) setInvoices(await invRes.json());
             if (orderRes.ok) setActiveOrders(await orderRes.json());
             if (passRes.ok) setActivePasses(await passRes.json());
+            if (historyRes.ok) setReturnHistory(await historyRes.json());
             if (statRes.ok) {
                 const data = await statRes.json();
                 setStats(data.finance_stats);
@@ -110,6 +113,15 @@ function CashierDashboardContent() {
                     </div>
                     <div className="text-[10px] font-black text-emerald-800/60 uppercase tracking-[0.2em] mb-1">Today's Collection</div>
                     <div className="text-2xl lg:text-3xl font-black text-gray-900">${stats?.today_collection.toFixed(2) || '0.00'}</div>
+                    {stats?.collection_breakdown && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            {Object.entries(stats.collection_breakdown).map(([mode, amount]: [any, any]) => (
+                                <span key={mode} className="text-[9px] font-black text-emerald-700/70 uppercase">
+                                    {mode.replace('_', ' ')}: ${amount.toFixed(2)}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-orange-100 p-6 rounded-[2rem] md:rounded-[2.5rem] border border-orange-200/50 shadow-sm transition-all md:hover:scale-[1.02]">
@@ -138,8 +150,10 @@ function CashierDashboardContent() {
                             <Smartphone className="text-indigo-700" size={24} />
                         </div>
                     </div>
-                    <div className="text-[10px] font-black text-indigo-800/60 uppercase tracking-[0.2em] mb-1">MOMO Status</div>
-                    <div className="text-2xl lg:text-3xl font-black text-gray-900">Online</div>
+                    <div className="text-[10px] font-black text-indigo-800/60 uppercase tracking-[0.2em] mb-1">MOMO Collection (Today)</div>
+                    <div className="text-2xl lg:text-3xl font-black text-gray-900">
+                        ${((stats?.collection_breakdown?.MOMO_LONESTAR || 0) + (stats?.collection_breakdown?.MOMO_ORANGE || 0)).toFixed(2)}
+                    </div>
                 </div>
             </div>
 
@@ -239,17 +253,29 @@ function CashierDashboardContent() {
                                                         <CheckCircle size={12} /> PAID
                                                     </span>
                                                 ) : (
-                                                    <span className="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-orange-100 flex items-center gap-1.5 w-fit">
-                                                        <Clock size={12} /> UNPAID
-                                                    </span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-orange-100 flex items-center gap-1.5 w-fit">
+                                                            <Clock size={12} /> UNPAID
+                                                        </span>
+                                                        {!invoice.is_service_ready && (
+                                                            <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-amber-100 flex items-center gap-1 w-fit animate-pulse">
+                                                                <Utensils size={10} /> Service Pending
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </td>
                                             <td className="px-6 md:px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => {
+                                                            if (!invoice.is_service_ready) {
+                                                                showNotification("Cannot print invoice: Food/drinks not yet served.", "error");
+                                                                return;
+                                                            }
                                                             const printWindow = window.open('', '', 'width=600,height=800');
                                                             if (printWindow) {
+                                                                // ... (rest of print logic remains same)
                                                                 const content = `
                                                                     <html>
                                                                         <head>
@@ -290,8 +316,9 @@ function CashierDashboardContent() {
                                                                 printWindow.print();
                                                             }
                                                         }}
-                                                        className="p-2 bg-gray-100 text-gray-900 rounded-xl hover:bg-gray-200 transition-all border border-gray-200"
-                                                        title="Print Invoice"
+                                                        disabled={!invoice.is_service_ready}
+                                                        className={`p-2 rounded-xl transition-all border ${!invoice.is_service_ready ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed' : 'bg-gray-100 text-gray-900 border-gray-200 hover:bg-gray-200'}`}
+                                                        title={invoice.is_service_ready ? "Print Invoice" : "Service Pending"}
                                                     >
                                                         <Receipt size={18} />
                                                     </button>
@@ -300,12 +327,21 @@ function CashierDashboardContent() {
                                                             Receipt
                                                         </div>
                                                     ) : (
-                                                        <Link
-                                                            href={`/staff/cashier/payment/${invoice.id}`}
-                                                            className="inline-flex px-4 md:px-6 py-2 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all items-center gap-2"
-                                                        >
-                                                            Pay
-                                                        </Link>
+                                                        invoice.is_service_ready ? (
+                                                            <Link
+                                                                href={`/staff/cashier/payment/${invoice.id}`}
+                                                                className="inline-flex px-4 md:px-6 py-2 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all items-center gap-2"
+                                                            >
+                                                                Pay
+                                                            </Link>
+                                                        ) : (
+                                                            <button
+                                                                disabled
+                                                                className="px-4 md:px-6 py-2 bg-gray-200 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed flex items-center gap-2"
+                                                            >
+                                                                Pending
+                                                            </button>
+                                                        )
                                                     )}
                                                 </div>
                                             </td>
@@ -380,6 +416,71 @@ function CashierDashboardContent() {
                                 ))}
                                 {activePasses.length === 0 && <p className="text-gray-400 text-sm italic py-4">No active passes found.</p>}
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Return History Section */}
+                    <div className="mt-8 bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
+                            <Clock size={20} className="text-emerald-500" /> Recent Returns History
+                        </h3>
+                        <div className="overflow-x-auto scrollbar-hide">
+                            <table className="w-full text-left min-w-[700px]">
+                                <thead className="bg-gray-50/50">
+                                    <tr>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Order/Pass</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Items Returned</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Approved By</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {returnHistory.map((ret: any) => (
+                                        <tr key={ret.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="text-[11px] font-bold text-gray-900">{new Date(ret.requested_at).toLocaleDateString()}</div>
+                                                <div className="text-[9px] text-gray-400 uppercase">{new Date(ret.requested_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-[11px] font-black text-gray-900 uppercase">Order #{ret.order}</div>
+                                                <div className="text-[9px] text-gray-400">Room: {ret.room}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-[11px] font-medium text-gray-600 max-w-[200px] truncate" title={ret.items_summary}>
+                                                    {ret.items_summary}
+                                                </div>
+                                                <div className="text-[9px] italic text-gray-400 truncate max-w-[200px]">"{ret.reason}"</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {ret.approver_name ? (
+                                                    <div>
+                                                        <div className="text-[11px] font-black text-gray-900 uppercase">{ret.approver_name}</div>
+                                                        <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">{ret.approver_department}</div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-[10px] text-gray-400 font-bold italic">Auto-System</div>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${ret.status === 'APPROVED_ADMIN' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                                        ret.status === 'REJECTED' ? 'bg-red-50 text-red-600 border border-red-100' :
+                                                            'bg-orange-50 text-orange-600 border border-orange-100'
+                                                    }`}>
+                                                    {ret.status.replace('_', ' ')}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {returnHistory.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-8 text-center text-gray-400 text-sm italic">
+                                                No processed returns in the recent history.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

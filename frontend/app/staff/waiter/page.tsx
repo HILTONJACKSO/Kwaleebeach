@@ -75,6 +75,8 @@ function WaiterPageContent() {
         } catch (e) { console.error(e); }
     };
     const [selectedReturnOrder, setSelectedReturnOrder] = useState<number | null>(null);
+    const [selectedReturnOrderItems, setSelectedReturnOrderItems] = useState<any[]>([]);
+    const [selectedItemsForReturn, setSelectedItemsForReturn] = useState<{ [key: number]: number }>({});
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
     const [returnReason, setReturnReason] = useState('');
     const [submittingReturn, setSubmittingReturn] = useState(false);
@@ -152,7 +154,16 @@ function WaiterPageContent() {
 
     const handleReturnSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedReturnOrder || !returnReason.trim()) return;
+
+        const returnItems = Object.entries(selectedItemsForReturn).map(([id, qty]) => ({
+            order_item_id: parseInt(id),
+            quantity: qty
+        }));
+
+        if (!selectedReturnOrder || returnItems.length === 0 || !returnReason.trim()) {
+            if (returnItems.length === 0) showNotification("Please select items to return", "error");
+            return;
+        }
 
         setSubmittingReturn(true);
         try {
@@ -162,13 +173,17 @@ function WaiterPageContent() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
-                body: JSON.stringify({ reason: returnReason })
+                body: JSON.stringify({
+                    reason: returnReason,
+                    items: returnItems
+                })
             });
 
             if (res.ok) {
                 showNotification("Return request submitted to Kitchen/Bar", "success");
                 setIsReturnModalOpen(false);
                 setReturnReason('');
+                setSelectedItemsForReturn({});
                 fetchOrders();
             } else {
                 showNotification("Failed to request return", "error");
@@ -375,7 +390,12 @@ function WaiterPageContent() {
                                             </button>
                                         )}
                                         <button
-                                            onClick={() => { setSelectedReturnOrder(order.id); setIsReturnModalOpen(true); }}
+                                            onClick={() => {
+                                                setSelectedReturnOrder(order.id);
+                                                setSelectedReturnOrderItems(order.items);
+                                                setSelectedItemsForReturn({});
+                                                setIsReturnModalOpen(true);
+                                            }}
                                             className="p-4 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-sm"
                                             title="Request Return"
                                         >
@@ -438,18 +458,68 @@ function WaiterPageContent() {
                         </div>
                         <form onSubmit={handleReturnSubmit} className="p-8 space-y-6">
                             <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Select Items to Return</label>
+                                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 scrollbar-hide">
+                                    {selectedReturnOrderItems.map(item => (
+                                        <div key={item.id} className={`p-3 rounded-xl border transition-all ${selectedItemsForReturn[item.id] ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-100'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!selectedItemsForReturn[item.id]}
+                                                    onChange={() => {
+                                                        setSelectedItemsForReturn(prev => {
+                                                            if (prev[item.id]) {
+                                                                const next = { ...prev };
+                                                                delete next[item.id];
+                                                                return next;
+                                                            }
+                                                            return { ...prev, [item.id]: item.quantity };
+                                                        });
+                                                    }}
+                                                    className="w-4 h-4 rounded-lg border-2 border-gray-300 text-orange-500 focus:ring-orange-500"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="text-xs font-bold text-gray-900">{item.menu_item_name}</div>
+                                                    <div className="text-[9px] text-gray-400 font-bold uppercase">Qty: {item.quantity}</div>
+                                                </div>
+                                                {selectedItemsForReturn[item.id] && (
+                                                    <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-orange-100">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedItemsForReturn(prev => ({ ...prev, [item.id]: Math.max(1, prev[item.id] - 1) }))}
+                                                            className="text-gray-400 hover:text-orange-500"
+                                                        >
+                                                            <Minus size={12} />
+                                                        </button>
+                                                        <span className="text-xs font-black text-gray-900">{selectedItemsForReturn[item.id]}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedItemsForReturn(prev => ({ ...prev, [item.id]: Math.min(item.quantity, prev[item.id] + 1) }))}
+                                                            className="text-gray-400 hover:text-orange-500"
+                                                        >
+                                                            <Plus size={12} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Reason for Return</label>
                                 <textarea
                                     required
                                     value={returnReason}
                                     onChange={(e) => setReturnReason(e.target.value)}
-                                    placeholder="e.g. Dish was cold, Guest changed mind, Wrong item..."
-                                    className="w-full bg-white border-2 border-gray-300 rounded-3xl p-6 text-sm font-bold text-black focus:border-[var(--color-primary)] transition-all outline-none min-h-[150px] resize-none shadow-sm"
+                                    placeholder="e.g. Dish was cold, Guest changed mind..."
+                                    className="w-full bg-white border-2 border-gray-300 rounded-3xl p-6 text-sm font-bold text-black focus:border-[var(--color-primary)] transition-all outline-none min-h-[120px] resize-none shadow-sm"
                                 />
                             </div>
                             <button
                                 type="submit"
-                                disabled={submittingReturn || !returnReason.trim()}
+                                disabled={submittingReturn || Object.keys(selectedItemsForReturn).length === 0 || !returnReason.trim()}
                                 className="w-full bg-gray-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-[var(--color-primary)] transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
                             >
                                 {submittingReturn ? "Submitting..." : <><RefreshCw size={16} /> Submit Return Request</>}

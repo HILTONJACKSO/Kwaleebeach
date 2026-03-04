@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUI } from '@/context/UIContext';
-import { DollarSign, CreditCard, Banknote, User, Save, Hash, ArrowUpRight, Smartphone } from 'lucide-react';
+import { DollarSign, Receipt, Clock, CheckCircle, Search, CreditCard, Banknote, RefreshCw, Package, Waves, Utensils, FileText, ArrowUpRight, Wallet, Smartphone, User, Save, ChevronLeft } from 'lucide-react';
 import FormPageLayout from '@/components/FormPageLayout';
 
 export default function CashierPaymentPage() {
@@ -20,6 +20,7 @@ export default function CashierPaymentPage() {
         amount: '',
         reason: ''
     });
+    const [currentAmount, setCurrentAmount] = useState('');
 
     const fetchData = () => {
         fetch(`/api/finance/invoices/${invoiceId}/`, {
@@ -35,6 +36,16 @@ export default function CashierPaymentPage() {
     useEffect(() => {
         fetchData();
     }, [invoiceId]);
+
+    const totalPaid = invoice?.payments?.reduce((acc: number, p: any) => acc + parseFloat(p.amount), 0) || 0;
+    const remainingBalance = invoice ? parseFloat(invoice.total_ft) - totalPaid : 0;
+
+    // Set default amount to remaining balance when step changes or invoice loads
+    useEffect(() => {
+        if (invoice && remainingBalance > 0 && !currentAmount) {
+            setCurrentAmount(remainingBalance.toFixed(2));
+        }
+    }, [invoice, step]);
 
     const handleApplyDiscount = async () => {
         setLoading(true);
@@ -68,6 +79,11 @@ export default function CashierPaymentPage() {
 
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!currentAmount || parseFloat(currentAmount) <= 0) {
+            showNotification("Please enter a valid amount", "error");
+            return;
+        }
+
         setLoading(true);
         try {
             const res = await fetch(`/api/finance/invoices/${invoiceId}/pay/`, {
@@ -78,15 +94,21 @@ export default function CashierPaymentPage() {
                 },
                 body: JSON.stringify({
                     mode: paymentMethod,
-                    amount: invoice.total_ft
+                    amount: currentAmount
                 })
             });
 
             if (res.ok) {
-                showNotification(`Payment of $${invoice?.total_ft} processed successfully!`, 'success');
-                router.push('/staff/cashier');
+                const data = await res.json();
+                showNotification(`Payment of $${currentAmount} processed!`, 'success');
+                setCurrentAmount('');
+                fetchData();
+                if (data.is_paid) {
+                    router.push('/staff/cashier');
+                }
             } else {
-                showNotification("Payment failed", "error");
+                const err = await res.json();
+                showNotification(err.error || "Payment failed", "error");
             }
         } catch (e) {
             showNotification("Connection error", "error");
@@ -148,7 +170,21 @@ export default function CashierPaymentPage() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl pointer-events-none"></div>
                 </div>
 
+                {/* Service Pending Warning */}
+                {!invoice.is_service_ready && (
+                    <div className="bg-amber-50 border-2 border-amber-200 p-6 rounded-3xl flex items-start gap-4 animate-pulse">
+                        <div className="bg-amber-200 p-3 rounded-2xl text-amber-700">
+                            <Utensils size={24} />
+                        </div>
+                        <div>
+                            <h4 className="text-amber-800 font-black uppercase tracking-widest text-[10px] mb-1">Service Pending</h4>
+                            <p className="text-amber-700 text-sm font-bold">This invoice contains food or drinks that have not been served yet. Payment and invoicing are restricted until all items are marked as SERVED.</p>
+                        </div>
+                    </div>
+                )}
+
                 {step === 'REVIEW' ? (
+                    // ... (rest of review step remains same)
                     <div className="space-y-6">
                         <div className="p-6 bg-white rounded-3xl border border-gray-100 space-y-4">
                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Items in Invoice</label>
@@ -174,79 +210,151 @@ export default function CashierPaymentPage() {
                         </button>
                     </div>
                 ) : (
-                    <form onSubmit={handlePayment} className="space-y-6 animate-in slide-in-from-right duration-300">
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Payment Method</label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setPaymentMethod('CASH')}
-                                    className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'CASH'
-                                        ? 'border-[var(--color-primary)] bg-orange-50 text-[var(--color-primary)]'
-                                        : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'}`}
-                                >
-                                    <Banknote size={24} />
-                                    <span className="text-xs font-black uppercase tracking-widest">Cash</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setPaymentMethod('VISA')}
-                                    className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'VISA'
-                                        ? 'border-[var(--color-primary)] bg-orange-50 text-[var(--color-primary)]'
-                                        : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'}`}
-                                >
-                                    <CreditCard size={24} />
-                                    <span className="text-xs font-black uppercase tracking-widest">Visa/Card</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setPaymentMethod('MOMO_LONESTAR')}
-                                    className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'MOMO_LONESTAR'
-                                        ? 'border-yellow-500 bg-yellow-50 text-yellow-700'
-                                        : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'}`}
-                                >
-                                    <Smartphone size={24} />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Momo Lonestar</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setPaymentMethod('MOMO_ORANGE')}
-                                    className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'MOMO_ORANGE'
-                                        ? 'border-orange-600 bg-orange-50 text-orange-700'
-                                        : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'}`}
-                                >
-                                    <Smartphone size={24} />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Momo Orange</span>
-                                </button>
+                    <form onSubmit={handlePayment} className="space-y-8 animate-in slide-in-from-right duration-300">
+                        {/* Split Payment Progress */}
+                        <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-3xl relative overflow-hidden">
+                            <div className="relative z-10 flex justify-between items-end">
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-emerald-600 mb-1">Remaining Balance</p>
+                                    <h4 className="text-2xl font-black text-emerald-900">${remainingBalance.toFixed(2)}</h4>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-emerald-600 mb-1">Total Paid</p>
+                                    <p className="text-sm font-bold text-emerald-900">${totalPaid.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <div className="mt-4 h-2 bg-white/50 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-emerald-500 transition-all duration-500"
+                                    style={{ width: `${(totalPaid / parseFloat(invoice.total_ft)) * 100}%` }}
+                                ></div>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gray-400">
-                                <User size={20} />
+                        {/* Payment History */}
+                        {invoice.payments?.length > 0 && (
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Payment History</label>
+                                <div className="space-y-2">
+                                    {invoice.payments.map((p: any) => (
+                                        <div key={p.id} className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-50 shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-gray-50 rounded-xl text-gray-400">
+                                                    {p.mode === 'CASH' ? <Banknote size={16} /> : <Smartphone size={16} />}
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black text-gray-900 uppercase">{p.mode.replace('_', ' ')}</p>
+                                                    <p className="text-[8px] text-gray-400 font-medium">{new Date(p.date_paid).toLocaleTimeString()}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-sm font-black text-gray-900">${parseFloat(p.amount).toFixed(2)}</div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Guest / Booking</p>
-                                <p className="text-sm font-bold text-gray-900">{invoice.guest_name || 'Guest'}</p>
-                            </div>
-                        </div>
+                        )}
 
-                        <div className="flex gap-4">
-                            <button
-                                type="button"
-                                onClick={() => setStep('REVIEW')}
-                                className="px-8 bg-gray-100 text-gray-500 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all"
-                            >
-                                Back
-                            </button>
-                            <button
-                                disabled={loading}
-                                type="submit"
-                                className="flex-1 bg-gray-900 text-white py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 disabled:opacity-50"
-                            >
-                                {loading ? "Processing..." : <><Save size={20} /> Authorize Payment</>}
-                            </button>
-                        </div>
+                        {remainingBalance > 0 ? (
+                            <div className="space-y-6">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Amount to Pay</label>
+                                    <div className="relative">
+                                        <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" size={24} />
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={currentAmount}
+                                            onChange={(e) => setCurrentAmount(e.target.value)}
+                                            className="w-full pl-16 pr-8 py-5 bg-white border border-gray-100 rounded-3xl text-2xl font-black text-gray-900 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm"
+                                            placeholder="0.00"
+                                            max={remainingBalance}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Select Payment Method</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('CASH')}
+                                            className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'CASH'
+                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
+                                                : 'border-gray-50 bg-white text-gray-400 hover:border-gray-100'}`}
+                                        >
+                                            <Banknote size={24} />
+                                            <span className="text-xs font-black uppercase tracking-widest">Cash</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('VISA')}
+                                            className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'VISA'
+                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
+                                                : 'border-gray-50 bg-white text-gray-400 hover:border-gray-100'}`}
+                                        >
+                                            <CreditCard size={24} />
+                                            <span className="text-xs font-black uppercase tracking-widest">Visa/Card</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('MOMO_LONESTAR')}
+                                            className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'MOMO_LONESTAR'
+                                                ? 'border-yellow-500 bg-yellow-50 text-yellow-700'
+                                                : 'border-gray-50 bg-white text-gray-400 hover:border-gray-100'}`}
+                                        >
+                                            <Smartphone size={24} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-center">Momo Lonestar</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('MOMO_ORANGE')}
+                                            className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${paymentMethod === 'MOMO_ORANGE'
+                                                ? 'border-orange-600 bg-orange-50 text-orange-700'
+                                                : 'border-gray-50 bg-white text-gray-400 hover:border-gray-100'}`}
+                                        >
+                                            <Smartphone size={24} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-center">Momo Orange</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep('REVIEW')}
+                                        className="px-8 bg-gray-100 text-gray-500 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        disabled={loading || !invoice.is_service_ready}
+                                        type="submit"
+                                        className="flex-1 bg-gray-900 text-white py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 disabled:opacity-50"
+                                    >
+                                        {loading ? "Processing..." : (
+                                            invoice.is_service_ready ? <><Save size={20} /> Authorize ${currentAmount}</> : "Service Pending"
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-emerald-500 p-8 rounded-[2rem] text-white flex flex-col items-center text-center gap-4">
+                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                    <CheckCircle size={32} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black uppercase tracking-widest">Fully Paid</h3>
+                                    <p className="text-emerald-100 text-sm font-medium mt-1">This invoice has been settled in full. You can now return to the dashboard.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/staff/cashier')}
+                                    className="mt-4 px-10 py-4 bg-white text-emerald-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-50 transition-all"
+                                >
+                                    Return to Dashboard
+                                </button>
+                            </div>
+                        )}
                     </form>
                 )}
             </div>

@@ -12,18 +12,42 @@ export default function CashierReturnPage() {
     const { showNotification } = useUI();
     const [loading, setLoading] = useState(false);
     const [reason, setReason] = useState('');
+    const [order, setOrder] = useState<any>(null);
+    const [selectedItems, setSelectedItems] = useState<Record<number, number>>({}); // id -> qty
+    const [approver, setApprover] = useState({ name: '', department: '' });
+
+    useEffect(() => {
+        if (type === 'order') {
+            fetch(`/api/inventory/orders/${id}/`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}` }
+            })
+                .then(res => res.json())
+                .then(data => setOrder(data));
+        }
+    }, [id, type]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!reason.trim()) {
-            showNotification("Please provide a reason", "error");
+        if (type === 'order' && Object.keys(selectedItems).length === 0) {
+            showNotification("Please select at least one item to return", "error");
             return;
         }
+
         setLoading(true);
         try {
             const url = type === 'order'
                 ? `/api/inventory/orders/${id}/request-return/`
                 : `/api/recreation/passes/${id}/request-return/`;
+
+            const payload: any = { reason };
+            if (type === 'order') {
+                payload.items = Object.entries(selectedItems).map(([order_item_id, quantity]) => ({
+                    order_item_id: parseInt(order_item_id),
+                    quantity
+                }));
+                payload.approver_name = approver.name;
+                payload.approver_department = approver.department;
+            }
 
             const res = await fetch(url, {
                 method: 'POST',
@@ -31,14 +55,15 @@ export default function CashierReturnPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
-                body: JSON.stringify({ reason })
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
                 showNotification(`${type === 'order' ? 'Order' : 'Pass'} return request submitted!`, 'success');
                 router.push('/staff/cashier');
             } else {
-                showNotification("Submission failed", "error");
+                const err = await res.json();
+                showNotification(err.error || "Submission failed", "error");
             }
         } catch (e) {
             showNotification("Connection error", "error");
@@ -73,6 +98,74 @@ export default function CashierReturnPage() {
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-orange-600">Reference ID</p>
                         <p className="text-xl font-black text-gray-900">#{id}</p>
+                    </div>
+                </div>
+
+                {type === 'order' && order && (
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Select Items to Return</label>
+                        <div className="space-y-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            {order.items.map((item: any) => (
+                                <div key={item.id} className="flex items-center justify-between gap-4 p-3 hover:bg-gray-50 rounded-2xl transition-all">
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={!!selectedItems[item.id]}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedItems(prev => ({ ...prev, [item.id]: item.quantity }));
+                                                } else {
+                                                    const newItems = { ...selectedItems };
+                                                    delete newItems[item.id];
+                                                    setSelectedItems(newItems);
+                                                }
+                                            }}
+                                            className="w-5 h-5 rounded-lg text-orange-500 focus:ring-orange-500 border-gray-200"
+                                        />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900">{item.menu_item_name}</p>
+                                            <p className="text-[10px] text-gray-400">Station: {item.preparation_station}</p>
+                                        </div>
+                                    </div>
+                                    {selectedItems[item.id] !== undefined && (
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max={item.quantity}
+                                                value={selectedItems[item.id]}
+                                                onChange={(e) => setSelectedItems(prev => ({ ...prev, [item.id]: parseInt(e.target.value) }))}
+                                                className="w-16 px-3 py-1 bg-gray-50 border border-gray-200 rounded-xl text-xs font-black text-center focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                            />
+                                            <span className="text-[10px] text-gray-400 font-bold">/ {item.quantity}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Approver Name</label>
+                        <input
+                            type="text"
+                            placeholder="Staff Name..."
+                            className="w-full px-6 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 text-sm font-bold transition-all"
+                            value={approver.name}
+                            onChange={(e) => setApprover(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Approver Department</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. Kitchen, Admin..."
+                            className="w-full px-6 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-orange-500 text-sm font-bold transition-all"
+                            value={approver.department}
+                            onChange={(e) => setApprover(prev => ({ ...prev, department: e.target.value }))}
+                        />
                     </div>
                 </div>
 

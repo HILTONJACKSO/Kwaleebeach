@@ -89,9 +89,17 @@ class ReportingViewSet(viewsets.ViewSet):
         
         waiter_avg_mins = int(waiter_avg_service.total_seconds() / 60) if waiter_avg_service else 0
 
-        # Finance Stats
-        today_collection = Payment.objects.filter(date_paid__gte=today_start).aggregate(sum=Sum('amount'))['sum'] or 0.00
+        # Finance Stats (Today)
+        today_payments = Payment.objects.filter(date_paid__gte=today_start)
+        today_collection = today_payments.aggregate(sum=Sum('amount'))['sum'] or 0.00
+        
+        # Breakdown by mode for today
+        mode_breakdown = today_payments.values('mode').annotate(total=Sum('amount')).order_by('-total')
+        collection_breakdown = {m['mode']: float(m['total']) for m in mode_breakdown}
+        
         pending_invoices = Invoice.objects.filter(is_paid=False).aggregate(sum=Sum('total_ft'))['sum'] or 0.00
+
+        # ... (rest of the data remains similar but we'll include the breakdown in the response)
 
         # Top Selling Items (Month)
         top_items = OrderItem.objects.filter(order__created_at__gte=timeframes['month'], order__status='SERVED') \
@@ -148,6 +156,7 @@ class ReportingViewSet(viewsets.ViewSet):
             },
             'finance_stats': {
                 'today_collection': float(today_collection),
+                'collection_breakdown': collection_breakdown,
                 'pending_invoices': float(pending_invoices)
             },
             'top_items': top_items,

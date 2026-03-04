@@ -135,6 +135,16 @@ class OrderReturn(models.Model):
     requested_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(blank=True, null=True)
     approved_by = models.CharField(max_length=100, blank=True)
+    approver_name = models.CharField(max_length=100, blank=True, help_text="Full name of person approving")
+    approver_department = models.CharField(max_length=50, blank=True, help_text="Department of person approving")
 
     def __str__(self):
         return f"Return for Order #{self.order.id} ({self.status})"
+
+class OrderReturnItem(models.Model):
+    order_return = models.ForeignKey(OrderReturn, on_delete=models.CASCADE, related_name='return_items')
+    order_item = models.ForeignKey(OrderItem, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantity}x {self.order_item.menu_item.name} in Return #{self.order_return.id}"

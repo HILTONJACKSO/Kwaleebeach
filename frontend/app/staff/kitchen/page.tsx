@@ -214,9 +214,17 @@ export default function KitchenPage() {
                     <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide lg:pb-0 w-full lg:max-w-xl">
                         {pendingReturns.map(ret => (
                             <div key={ret.id} className="bg-white/10 backdrop-blur-md p-4 rounded-2xl min-w-[240px] border border-white/20 flex flex-col justify-between">
-                                <div>
-                                    <div className="text-[10px] font-black uppercase tracking-widest mb-1">Order #{ret.order}</div>
-                                    <div className="text-xs font-medium mb-3 line-clamp-2">"{ret.reason}"</div>
+                                <div className="mb-3">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <div className="text-[10px] font-black uppercase tracking-widest">Order #{ret.order}</div>
+                                        <div className="text-[9px] font-black bg-white/20 px-2 py-0.5 rounded-full uppercase tracking-widest text-white/80">Room: {ret.room}</div>
+                                    </div>
+                                    <div className="text-[11px] font-black text-white mb-2 line-clamp-2">
+                                        {ret.items_summary || "Unknown Items"}
+                                    </div>
+                                    <div className="text-[10px] font-bold text-orange-200 italic line-clamp-1 border-t border-white/10 pt-2">
+                                        "{ret.reason}"
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => approveReturn(ret.id)}

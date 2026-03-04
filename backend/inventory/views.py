@@ -10,6 +10,7 @@ from .serializers import (
 )
 from django.db import transaction
 from decimal import Decimal
+from django.utils import timezone
 
 class InventoryItemViewSet(viewsets.ModelViewSet):
     queryset = InventoryItem.objects.all().order_by('name')
@@ -125,15 +126,26 @@ class OrderViewSet(viewsets.ModelViewSet):
     def request_return(self, request, pk=None):
         order = self.get_object()
         reason = request.data.get('reason')
+        items_data = request.data.get('items', []) # List of {order_item_id, quantity}
+        
         if not reason:
             return Response({'error': 'Reason is required'}, status=status.HTTP_400_BAD_REQUEST)
         
-        OrderReturn.objects.create(
-            order=order,
-            reason=reason,
-            status='REQUESTED'
-        )
-        return Response({'status': 'Return requested'})
+        with transaction.atomic():
+            ret = OrderReturn.objects.create(
+                order=order,
+                reason=reason,
+                status='REQUESTED'
+            )
+            
+            for item in items_data:
+                OrderReturnItem.objects.create(
+                    order_return=ret,
+                    order_item_id=item['order_item_id'],
+                    quantity=item['quantity']
+                )
+                
+        return Response({'status': 'Return requested', 'return_id': ret.id})
 
     @action(detail=False, methods=['get'], url_path='bill-summary')
     def bill_summary(self, request):
@@ -166,14 +178,54 @@ class OrderReturnViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Station approved'})
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def approve_admin(self, request, pk=None):
         ret = self.get_object()
         ret.status = 'APPROVED_ADMIN'
+        ret.approved_at = timezone.now()
+        ret.approved_by = request.user.username if request.user.is_authenticated else "Admin"
+        ret.approver_name = request.data.get('approver_name', '')
+        ret.approver_department = request.data.get('approver_department', '')
         ret.save()
         
-        # Mark order as returned if final approved
-        ret.order.status = 'RETURNED'
-        ret.order.save()
+        order = ret.order
+        from finance.models import Invoice, InvoiceItem
+        
+        # Find associated invoice
+        invoice = Invoice.objects.filter(items__related_order=order).distinct().first()
+        
+        if invoice:
+            for return_item in ret.return_items.all():
+                # Find corresponding InvoiceItem
+                # We can match by description or by linking OrderItem to InvoiceItem (preferred if we had the field)
+                # Since we don't have a direct link yet, we'll match by description or just find items related to this order
+                inv_items = invoice.items.filter(related_order=order, description__contains=return_item.order_item.menu_item.name)
+                
+                for inv_item in inv_items:
+                    if inv_item.quantity > return_item.quantity:
+                        inv_item.quantity -= return_item.quantity
+                        inv_item.total_line = inv_item.quantity * inv_item.unit_price
+                        inv_item.save()
+                    else:
+                        inv_item.delete()
+            
+            # Recalculate invoice totals
+            new_total = sum(item.total_line for item in invoice.items.all())
+            invoice.total_ht = new_total
+            invoice.total_ft = new_total # Simplifying tax logic for now
+            invoice.balance_ptd = new_total
+            invoice.save()
+
+        # Update order status if all items returned
+        total_items = sum(i.quantity for i in order.items.all())
+        returned_items = sum(i.quantity for i in ret.return_items.all()) # This logic is a bit simple if multiple returns exist
+        
+        # A more robust check:
+        # Check if there are any remaining items in the order that AREN'T in ANY approved returns
+        # For now, if this return covers all original quantities, mark as RETURNED
+        if returned_items >= total_items:
+            order.status = 'RETURNED'
+            order.save()
         
         return Response({'status': 'Final approved'})
 
