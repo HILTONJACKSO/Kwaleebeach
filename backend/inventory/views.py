@@ -2,7 +2,7 @@ from rest_framework import generics, status, viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
-from .models import MenuCategory, MenuItem, Order, InventoryItem, InventoryStock, StockTransfer, Department, OrderReturn, RestaurantTable
+from .models import MenuCategory, MenuItem, Order, InventoryItem, InventoryStock, StockTransfer, Department, OrderReturn, RestaurantTable, OrderReturnItem
 from .serializers import (
     MenuCategorySerializer, MenuItemSerializer, OrderSerializer,
     InventoryItemSerializer, InventoryStockSerializer, StockTransferSerializer, OrderReturnSerializer,
