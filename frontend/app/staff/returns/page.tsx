@@ -178,7 +178,7 @@ export default function ReturnsPage() {
                     filteredOrders.map(ret => (
                         <div key={ret.id} className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row gap-6 lg:gap-8 items-start lg:items-center animate-in zoom-in duration-300">
                             <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl md:rounded-3xl flex items-center justify-center shrink-0 ${ret.status === 'APPROVED_ADMIN' ? 'bg-emerald-50 text-emerald-600' :
-                                    ret.status === 'REJECTED' ? 'bg-rose-50 text-rose-600' : 'bg-orange-50 text-orange-600'
+                                ret.status === 'REJECTED' ? 'bg-rose-50 text-rose-600' : 'bg-orange-50 text-orange-600'
                                 }`}>
                                 <RefreshCw size={28} />
                             </div>
@@ -193,8 +193,8 @@ export default function ReturnsPage() {
                                         {new Date(ret.requested_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                                     </div>
                                     <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${ret.status === 'REQUESTED' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                            ret.status.includes('APPROVE') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                'bg-rose-50 text-rose-600 border-rose-100'
+                                        ret.status.includes('APPROVE') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                            'bg-rose-50 text-rose-600 border-rose-100'
                                         }`}>
                                         {ret.status.replace('_', ' ')}
                                     </div>
@@ -214,20 +214,29 @@ export default function ReturnsPage() {
 
                             {view === 'approvals' && (
                                 <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
-                                    {ret.status === 'REQUESTED' && (
+                                    {ret.status === 'REQUESTED' ? (
                                         <button
                                             onClick={() => handleApproveOrder(ret.id, 'station')}
-                                            className="flex-1 lg:flex-none px-6 py-4 lg:py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 flex items-center justify-center gap-2"
+                                            className="flex-1 lg:flex-none px-6 py-4 lg:py-3 bg-amber-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg shadow-amber-100 flex items-center justify-center gap-2"
                                         >
-                                            <CheckCircle size={16} /> Station Approve
+                                            <CheckCircle size={16} /> Approve for Review
+                                        </button>
+                                    ) : (
+                                        <div className="flex-1 lg:flex-none px-6 py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 flex items-center justify-center gap-2">
+                                            <Clock size={16} /> Awaiting Final Approval
+                                        </div>
+                                    )}
+
+                                    {/* Final Approve button only shown for Station Approved or Admin users */}
+                                    {(ret.status === 'APPROVED_STATION' || ret.status === 'REQUESTED') && (
+                                        <button
+                                            onClick={() => handleApproveOrder(ret.id, 'admin')}
+                                            className="px-6 py-3 bg-gray-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-gray-200 flex items-center gap-2"
+                                        >
+                                            <CheckCircle size={16} /> Final Approve
                                         </button>
                                     )}
-                                    <button
-                                        onClick={() => handleApproveOrder(ret.id, 'admin')}
-                                        className="px-6 py-3 bg-gray-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-gray-200 flex items-center gap-2"
-                                    >
-                                        <CheckCircle size={16} /> Final Approve
-                                    </button>
+
                                     <button className="p-3 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100">
                                         <XCircle size={20} />
                                     </button>

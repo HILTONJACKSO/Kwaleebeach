@@ -72,7 +72,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def active(self, request):
-        queryset = self.get_queryset().exclude(status='SERVED')
+        queryset = self.get_queryset().exclude(status__in=['SERVED', 'RETURNED', 'CANCELLED'])
         room = request.query_params.get('room')
         if room:
             queryset = queryset.filter(room=room)
@@ -242,13 +242,10 @@ class OrderReturnViewSet(viewsets.ModelViewSet):
             invoice.save()
 
         # Update order status if all items returned
-        total_items = sum(i.quantity for i in order.items.all())
-        returned_items = sum(i.quantity for i in ret.return_items.all()) # This logic is a bit simple if multiple returns exist
+        remaining_items_count = order.items.count()
+        remaining_qty = sum(i.quantity for i in order.items.all())
         
-        # A more robust check:
-        # Check if there are any remaining items in the order that AREN'T in ANY approved returns
-        # For now, if this return covers all original quantities, mark as RETURNED
-        if returned_items >= total_items:
+        if remaining_items_count == 0 or remaining_qty == 0:
             order.status = 'RETURNED'
             order.save()
         
