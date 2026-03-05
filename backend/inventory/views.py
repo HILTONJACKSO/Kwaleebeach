@@ -16,6 +16,31 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
     queryset = InventoryItem.objects.all().order_by('name')
     serializer_class = InventoryItemSerializer
 
+    @action(detail=True, methods=['post'], url_path='add-stock')
+    @transaction.atomic
+    def add_stock(self, request, pk=None):
+        item = self.get_object()
+        department = request.data.get('department', 'MAIN')
+        quantity = Decimal(str(request.data.get('quantity', 0)))
+        
+        # Get or create stock record for this department
+        stock, created = InventoryStock.objects.get_or_create(
+            item=item, 
+            department=department,
+            defaults={'quantity': 0}
+        )
+        
+        # Add the new quantity to existing
+        stock.quantity = Decimal(str(stock.quantity)) + quantity
+        stock.save()
+        
+        return Response({
+            'status': 'success', 
+            'new_quantity': float(stock.quantity),
+            'department': department,
+            'item_name': item.name
+        })
+
 class InventoryStockViewSet(viewsets.ModelViewSet):
     queryset = InventoryStock.objects.all()
     serializer_class = InventoryStockSerializer
