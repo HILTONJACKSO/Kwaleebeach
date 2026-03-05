@@ -189,7 +189,7 @@ export default function RoomDetailPage() {
                 <div className="flex-1 lg:max-w-3xl">
                     <section className="mb-16">
                         <h2 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter mb-8">The Experience</h2>
-                        <div className="prose prose-lg prose-slate max-w-none prose-p:font-medium prose-p:leading-relaxed prose-p:text-slate-500 text-lg">
+                        <div className="prose prose-lg max-w-none prose-p:font-medium prose-p:leading-relaxed prose-p:text-slate-900 text-slate-900 text-lg">
                             <p>{room.description}</p>
                             <p className="mt-6">
                                 Designed with absolute tranquility in mind, every aspect of this suite invites you to disconnect from the world and reconnect with nature. Floor-to-ceiling aesthetics blend seamlessly with the surrounding environment, offering an unparalleled barefoot luxury experience. Enjoy premium bedding, artisan-crafted local furniture, and exclusive access to the resort's finest amenities.
@@ -317,8 +317,8 @@ export default function RoomDetailPage() {
                             <button
                                 onClick={() => toggleRoom(room as any)}
                                 className={`w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${isRoomSelected
-                                        ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100'
-                                        : 'bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50'
+                                    ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100'
+                                    : 'bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50'
                                     }`}
                             >
                                 {isRoomSelected ? (
