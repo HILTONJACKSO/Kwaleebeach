@@ -24,7 +24,8 @@ import {
     Banknote,
     FileText,
     PieChart,
-    Table
+    Table,
+    PackageX
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
@@ -49,6 +50,7 @@ export default function StaffSidebar({ isMobileOpen, onClose }: StaffSidebarProp
         { name: 'Pool Access', href: '/staff/pool', icon: <Waves size={20} />, roles: ['ADMIN', 'RECREATION'] },
         { name: 'Beach Access', href: '/staff/beach', icon: <Umbrella size={20} />, roles: ['ADMIN', 'RECREATION'] },
         { name: 'Inventory', href: '/staff/inventory', icon: <Package size={20} />, roles: ['ADMIN', 'KITCHEN', 'BAR'] },
+        { name: 'Stock Out', href: '/staff/inventory/stock-out', icon: <PackageX size={20} />, roles: ['ADMIN'] },
         { name: 'Events', href: '/staff/events', icon: <Calendar size={20} />, roles: ['ADMIN', 'FRONT_DESK'] },
         { name: 'Returns', href: '/staff/returns', icon: <RefreshCw size={20} />, roles: ['ADMIN', 'CASHIER', 'FRONT_DESK'] },
         { name: 'Finance', href: '/staff/finance', icon: <Landmark size={20} />, roles: ['ADMIN'] },
