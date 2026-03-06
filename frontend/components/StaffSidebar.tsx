@@ -78,9 +78,10 @@ export default function StaffSidebar({ isMobileOpen, onClose }: StaffSidebarProp
             {/* Logo Section */}
             <div className="p-6 flex items-center justify-between border-b border-gray-800">
                 {!isCollapsed && (
-                    <span className="text-2xl font-black tracking-tighter text-[var(--color-primary)]">
-                        KWALEE<span className="text-white">.Staff</span>
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <img src="/logo.png" alt="Kwalee" className="h-10 w-auto" />
+                        <span className="text-white font-black text-xl tracking-tight mt-1">Staff</span>
+                    </div>
                 )}
                 <button
                     onClick={() => isMobileOpen && onClose ? onClose() : setIsCollapsed(!isCollapsed)}

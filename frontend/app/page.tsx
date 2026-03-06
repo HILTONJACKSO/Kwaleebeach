@@ -437,7 +437,9 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-16 mb-20 md:mb-32 text-white">
           <div className="md:col-span-1">
-            <div className="text-4xl font-black tracking-tighter mb-8 leading-none">{getConfig('home_brand_name', 'Kwalee')}<span className="text-[var(--color-yellow)]">Go</span></div>
+            <div className="mb-8">
+              <img src="/logo.png" alt={getConfig('home_brand_name', 'Kwalee Beach Resort')} className="h-24 w-auto" />
+            </div>
             <div className="flex gap-4">
               <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[var(--color-yellow)] hover:text-gray-900 transition-all cursor-pointer">
                 <Star size={18} />

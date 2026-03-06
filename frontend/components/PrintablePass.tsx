@@ -38,14 +38,12 @@ export default function PrintablePass({ details, onClose, onPrint }: { details: 
                         <div className="absolute top-1/2 -left-9 w-6 h-6 bg-gray-900 rounded-full transform -translate-y-1/2"></div>
                         <div className="absolute top-1/2 -right-9 w-6 h-6 bg-gray-900 rounded-full transform -translate-y-1/2"></div>
 
-                        {/* Icon */}
-                        <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${details.location === 'POOL' ? 'bg-cyan-50 text-cyan-500' : 'bg-orange-50 text-orange-500'
-                            }`}>
-                            {details.location === 'POOL' ? <Waves size={40} /> : <Umbrella size={40} />}
+                        {/* Logo */}
+                        <div className="flex justify-center mb-6">
+                            <img src="/logo.png" alt="Kwalee Beach Resort" className="w-24 h-auto object-contain" />
                         </div>
 
                         {/* Title */}
-                        <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-1">Kwalee Beach Resort</h2>
                         <h1 className="text-2xl font-black text-gray-900 mb-6">{details.pass_type_name}</h1>
 
                         {/* Details */}

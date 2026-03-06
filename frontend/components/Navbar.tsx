@@ -33,8 +33,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           <div className="flex items-center">
-            <Link href="/" className={`text-3xl font-black tracking-tighter ${isHome ? 'text-white' : 'text-gray-900'}`}>
-              KWALEE<span className={`${isHome ? 'text-white' : 'text-[var(--color-primary)]'}`}>.</span>
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/logo.png" alt="Kwalee Beach Resort" className="h-12 w-auto drop-shadow-md" />
             </Link>
           </div>
           <div className="hidden md:flex items-center space-x-8">
