@@ -41,7 +41,7 @@ export default function StockOutPage() {
             })
                 .then(res => res.json())
                 .then(data => {
-                    setSuggestions(data.results || []);
+                    setSuggestions(Array.isArray(data) ? data : (data.results || []));
                     setShowSuggestions(true);
                 });
         } else {
