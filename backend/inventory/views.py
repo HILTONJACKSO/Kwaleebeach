@@ -1,4 +1,4 @@
-from rest_framework import generics, status, viewsets, permissions
+from rest_framework import generics, status, viewsets, permissions, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
@@ -15,6 +15,8 @@ from django.utils import timezone
 class InventoryItemViewSet(viewsets.ModelViewSet):
     queryset = InventoryItem.objects.all().order_by('name')
     serializer_class = InventoryItemSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'sku']
 
     @action(detail=True, methods=['post'], url_path='add-stock')
     @transaction.atomic
