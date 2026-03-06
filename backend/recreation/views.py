@@ -152,50 +152,92 @@ class AccessPassViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='sell')
     def sell_pass(self, request):
-        pass_type_id = request.data.get('pass_type_id')
-        custom_name = request.data.get('custom_name')
-        custom_price = request.data.get('custom_price')
-        location = request.data.get('location')
-        
-        if custom_name and custom_price is not None and location:
-            # Create or get custom event pass type
-            pass_type, _ = PassType.objects.get_or_create(
-                name=custom_name,
-                location=location,
-                defaults={'price': custom_price}
-            )
-            final_price = float(custom_price)
-        else:
-            pass_type = PassType.objects.get(id=pass_type_id)
-            final_price = float(pass_type.price)
-        
-        access_pass = AccessPass.objects.create(
-            pass_type=pass_type,
-            amount_paid=final_price,
-            status='ACTIVE'
-        )
+        location = request.data.get('location') # 'POOL' or 'BEACH'
+        adult_count = int(request.data.get('adult_count', 0))
+        kids_count = int(request.data.get('kids_count', 0))
+        payment_method = request.data.get('payment_method') # Optional: 'CASH', 'MOMO_LONESTAR', etc.
+        guest_name = request.data.get('guest_name', 'Walk-in')
 
-        # Create Invoice for Cashier
-        if final_price > 0:
-            try:
-                invoice = Invoice.objects.create(
-                    invoice_number=f"INV-REC-{uuid.uuid4().hex[:6].upper()}",
-                    total_ht=final_price,
-                    total_ft=final_price,
-                    balance_ptd=final_price,
-                    is_paid=False
+        if not location:
+            return Response({'error': 'Location is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Find PassTypes
+        adult_type = None
+        kids_type = None
+        
+        if adult_count > 0:
+            adult_type = PassType.objects.filter(location=location, name__icontains='Adult').first()
+            if not adult_type:
+                return Response({'error': f'No Adult pass type found for {location}'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if kids_count > 0:
+            kids_type = PassType.objects.filter(location=location, name__icontains='Kids').first()
+            if not kids_type:
+                return Response({'error': f'No Kids pass type found for {location}'}, status=status.HTTP_404_NOT_FOUND)
+
+        total_price = 0
+        pass_items = []
+
+        if adult_count > 0:
+            total_price += float(adult_type.price) * adult_count
+            pass_items.append({'type': adult_type, 'count': adult_count})
+        
+        if kids_count > 0:
+            total_price += float(kids_type.price) * kids_count
+            pass_items.append({'type': kids_type, 'count': kids_count})
+
+        if not pass_items:
+            return Response({'error': 'No guests selected'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create Access Passes
+        created_passes = []
+        for item in pass_items:
+            for _ in range(item['count']):
+                p = AccessPass.objects.create(
+                    pass_type=item['type'],
+                    amount_paid=item['type'].price,
+                    guest_name=guest_name,
+                    status='ACTIVE'
                 )
+                created_passes.append(p)
+
+        # Create Invoice
+        invoice = None
+        if total_price > 0:
+            invoice = Invoice.objects.create(
+                invoice_number=f"INV-REC-{uuid.uuid4().hex[:6].upper()}",
+                reference_location=f"{location} POS",
+                total_ht=total_price,
+                total_ft=total_price,
+                balance_ptd=total_price,
+                is_paid=False
+            )
+            for item in pass_items:
                 InvoiceItem.objects.create(
                     invoice=invoice,
-                    description=f"Recreation Pass: {pass_type.name} ({pass_type.location})",
-                    quantity=1,
-                    unit_price=final_price,
-                    total_line=final_price
+                    description=f"{item['type'].name} x{item['count']}",
+                    quantity=item['count'],
+                    unit_price=item['type'].price,
+                    total_line=float(item['type'].price) * item['count']
                 )
-            except Exception as e:
-                print(f"Failed to create recreation invoice: {e}")
 
-        return Response(AccessPassSerializer(access_pass).data)
+            # Handle Payment
+            if payment_method:
+                from finance.models import Payment
+                Payment.objects.create(
+                    invoice=invoice,
+                    amount=total_price,
+                    mode=payment_method
+                )
+                invoice.is_paid = True
+                invoice.balance_ptd = 0
+                invoice.save()
+
+        return Response({
+            'message': 'Success',
+            'invoice_id': invoice.id if invoice else None,
+            'pass_ids': [p.id for p in created_passes]
+        })
 
     @action(detail=False, methods=['get'], url_path='recent')
     def recent(self, request):
