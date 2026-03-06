@@ -102,6 +102,40 @@ export default function ReturnsPage() {
         }
     };
 
+    const handleRejectOrder = async (id: number) => {
+        try {
+            const res = await fetch(`/api/inventory/returns/${id}/reject/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                }
+            });
+            if (res.ok) {
+                showNotification("Return Rejected", "info");
+                fetchData();
+            }
+        } catch (e) {
+            showNotification("Action failed", "error");
+        }
+    };
+
+    const handleRejectPass = async (id: number) => {
+        try {
+            const res = await fetch(`/api/recreation/returns/${id}/reject/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                }
+            });
+            if (res.ok) {
+                showNotification("Pass Return Rejected", "info");
+                fetchData();
+            }
+        } catch (e) {
+            showNotification("Action failed", "error");
+        }
+    };
+
     const filteredOrders = view === 'approvals'
         ? orderReturns.filter(r => r.status === 'REQUESTED' || r.status === 'APPROVED_STATION')
         : orderReturns;
@@ -237,7 +271,11 @@ export default function ReturnsPage() {
                                         </button>
                                     )}
 
-                                    <button className="p-3 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100">
+                                    <button 
+                                        onClick={() => handleRejectOrder(ret.id)}
+                                        className="p-3 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100"
+                                        title="Deny Return"
+                                    >
                                         <XCircle size={20} />
                                     </button>
                                 </div>
@@ -291,7 +329,11 @@ export default function ReturnsPage() {
                                     >
                                         <CheckCircle size={16} /> Approve Return
                                     </button>
-                                    <button className="p-3 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100">
+                                    <button 
+                                        onClick={() => handleRejectPass(ret.id)}
+                                        className="p-3 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100"
+                                        title="Deny Return"
+                                    >
                                         <XCircle size={20} />
                                     </button>
                                 </div>

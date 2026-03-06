@@ -34,6 +34,13 @@ class PassReturnViewSet(viewsets.ModelViewSet):
         
         return Response({'status': 'Approved'})
 
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        ret = self.get_object()
+        ret.status = 'REJECTED'
+        ret.save()
+        return Response({'status': 'Rejected'})
+
     @action(detail=False, methods=['get'])
     def history(self, request):
         days = request.query_params.get('days', None)
