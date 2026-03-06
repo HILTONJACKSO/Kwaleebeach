@@ -41,6 +41,42 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
             'item_name': item.name
         })
 
+    @action(detail=True, methods=['post'], url_path='stock-out')
+    @transaction.atomic
+    def stock_out(self, request, pk=None):
+        item = self.get_object()
+        # Check if user is admin
+        if not request.user.is_authenticated or request.user.role != 'ADMIN':
+            return Response({'error': 'Only Admins can perform stock-out.'}, status=status.HTTP_403_FORBIDDEN)
+            
+        department = request.data.get('department', 'MAIN')
+        quantity = Decimal(str(request.data.get('quantity', 0)))
+        reason = request.data.get('reason')
+        
+        if not reason:
+            return Response({'error': 'Reason is required for stock-out (e.g. Expired, Damaged).'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            stock = InventoryStock.objects.get(item=item, department=department)
+            if stock.quantity < quantity:
+                return Response({'error': f'Insufficient stock in {department}. Available: {stock.quantity}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            stock.quantity = Decimal(str(stock.quantity)) - quantity
+            stock.save()
+            
+            # Log this somewhere if needed, but for now just update stock
+            print(f"ADMIN STOCK-OUT: {quantity} {item.name} from {department}. Reason: {reason}")
+            
+            return Response({
+                'status': 'success',
+                'item': item.name,
+                'department': department,
+                'removed': float(quantity),
+                'new_quantity': float(stock.quantity)
+            })
+        except InventoryStock.DoesNotExist:
+            return Response({'error': f'No stock record found for {item.name} in {department}.'}, status=status.HTTP_404_NOT_FOUND)
+
 class InventoryStockViewSet(viewsets.ModelViewSet):
     queryset = InventoryStock.objects.all()
     serializer_class = InventoryStockSerializer
@@ -94,6 +130,16 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all().order_by('-created_at')
     serializer_class = OrderSerializer
     permission_classes = [permissions.AllowAny]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Check if user is authenticated and is admin
+        if not request.user.is_authenticated or request.user.role != 'ADMIN':
+            return Response({'error': 'Only Admins can delete orders.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # If served, maybe we shouldn't delete but Admin has full power here as requested
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'])
     def active(self, request):

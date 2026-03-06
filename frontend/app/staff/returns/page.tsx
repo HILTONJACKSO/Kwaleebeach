@@ -148,7 +148,7 @@ export default function ReturnsPage() {
                             onClick={() => setActiveTab('passes')}
                             className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'passes' ? 'bg-blue-500 text-white shadow-lg shadow-blue-100' : 'text-gray-400 hover:text-gray-600'}`}
                         >
-                            Pool Passes
+                            Beach & Pool Passes
                         </button>
                     </div>
                 </div>

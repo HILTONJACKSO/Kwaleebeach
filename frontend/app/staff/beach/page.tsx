@@ -29,6 +29,8 @@ export default function BeachPage() {
         month_passes: 0
     });
     const [generatedPass, setGeneratedPass] = useState<any | null>(null);
+    const [guestCounts, setGuestCounts] = useState<Record<number, number>>({});
+    const [paymentMethod, setPaymentMethod] = useState('CASH');
 
     useEffect(() => {
         fetch('/api/recreation/types/?t=' + new Date().getTime(), {
@@ -130,7 +132,7 @@ export default function BeachPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
                 },
-                body: JSON.stringify({ pass_type_id: passType.id })
+                body: JSON.stringify({ pass_type_id: passType.id, payment_mode: paymentMethod })
             });
             if (res.ok) {
                 const data = await res.json();
@@ -141,6 +143,41 @@ export default function BeachPage() {
             }
         } catch (e) {
             showNotification('Sale failed', 'error');
+        }
+    };
+
+    const updateGuestCount = (id: number, delta: number) => {
+        setGuestCounts(prev => ({
+            ...prev,
+            [id]: Math.max(0, (prev[id] || 0) + delta)
+        }));
+    };
+
+    const handleBulkSell = async () => {
+        const selected = Object.entries(guestCounts).filter(([_, count]) => count > 0);
+        if (selected.length === 0) return;
+
+        try {
+            // Processing sequentially for now to generate distinct passes, but could be bulked in backend
+            for (const [id, count] of selected) {
+                for (let i = 0; i < count; i++) {
+                    const res = await fetch('/api/recreation/passes/sell/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                        },
+                        body: JSON.stringify({ pass_type_id: parseInt(id), payment_mode: paymentMethod })
+                    });
+                    if (!res.ok) throw new Error('Sale failed');
+                }
+            }
+            showNotification('Passes Issued Successfully!', 'success');
+            setGuestCounts({});
+            fetchStats();
+            fetchRecent();
+        } catch (e) {
+            showNotification('One or more sales failed', 'error');
         }
     };
 
@@ -300,35 +337,69 @@ export default function BeachPage() {
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
                             <Ticket className="text-orange-500" /> Issue Access Pass
                         </h2>
-                        <div className="space-y-4">
-                            {passTypes.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-4">
-                                    {passTypes.map(pass => (
-                                        <div key={pass.id} className="p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-0 hover:border-orange-500 hover:shadow-md transition-all group">
-                                            <div className="flex items-center gap-4 w-full sm:w-auto">
-                                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 shrink-0">
-                                                    <Sun size={20} className="sm:hidden" />
-                                                    <Sun size={24} className="hidden sm:block" />
+
+                        <div className="space-y-8">
+                            {/* Guest Selection */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {passTypes.map(pass => {
+                                    const count = (guestCounts as any)[pass.id] || 0;
+                                    return (
+                                        <div key={pass.id} className="p-6 rounded-3xl border-2 border-gray-50 bg-gray-50/30 flex flex-col gap-4">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="font-black text-gray-900">{pass.name}</div>
+                                                    <div className="text-xl font-black text-orange-500">${pass.price}</div>
                                                 </div>
-                                                <div className="flex-1">
-                                                    <div className="font-black text-gray-900 text-sm md:text-base">{pass.name}</div>
-                                                    <div className="text-lg sm:text-xl font-black text-gray-500">${pass.price}</div>
-                                                </div>
+                                                <Sun className="text-orange-200" size={24} />
                                             </div>
-                                            <button
-                                                onClick={() => handleSell(pass)}
-                                                className="w-full sm:w-auto bg-gray-100 text-gray-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-orange-500 hover:text-white transition-all shadow-sm group-hover:shadow-orange-200"
-                                            >
-                                                Issue pass
-                                            </button>
+                                            <div className="flex items-center gap-4 bg-white rounded-2xl p-2 border border-gray-100 shadow-sm">
+                                                <button
+                                                    onClick={() => updateGuestCount(pass.id, -1)}
+                                                    className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all"
+                                                >-</button>
+                                                <div className="flex-1 text-center font-black text-gray-900">{count}</div>
+                                                <button
+                                                    onClick={() => updateGuestCount(pass.id, 1)}
+                                                    className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center font-black text-white hover:bg-orange-600 transition-all shadow-lg shadow-orange-100"
+                                                >+</button>
+                                            </div>
                                         </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Payment Method */}
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Payment Method</label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {[
+                                        { id: 'CASH', label: 'Cash' },
+                                        { id: 'MOMO_LONESTAR', label: 'Momo L' },
+                                        { id: 'MOMO_ORANGE', label: 'Momo O' },
+                                        { id: 'VISA', label: 'Visa' },
+                                        { id: 'BANK_TRANSFER', label: 'Transfer' },
+                                    ].map(method => (
+                                        <button
+                                            key={method.id}
+                                            onClick={() => setPaymentMethod(method.id)}
+                                            className={`py-3 px-2 rounded-xl border-2 font-black text-[10px] uppercase tracking-widest transition-all ${paymentMethod === method.id
+                                                ? 'border-orange-500 bg-orange-50 text-orange-600'
+                                                : 'border-gray-50 bg-gray-50 text-gray-400 hover:border-gray-200'
+                                                }`}
+                                        >
+                                            {method.label}
+                                        </button>
                                     ))}
                                 </div>
-                            ) : (
-                                <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 font-bold">
-                                    No Beach Passes Configured
-                                </div>
-                            )}
+                            </div>
+
+                            <button
+                                onClick={handleBulkSell}
+                                disabled={Object.values(guestCounts).every(v => v === 0)}
+                                className="w-full bg-orange-500 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-sm hover:bg-orange-600 transition-all shadow-xl shadow-orange-200 disabled:opacity-50 disabled:shadow-none"
+                            >
+                                Process & Issue Passes
+                            </button>
                         </div>
                     </div>
                 ) : (

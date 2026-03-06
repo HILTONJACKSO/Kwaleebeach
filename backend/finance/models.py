@@ -127,6 +127,7 @@ class Payment(models.Model):
         ('MOMO_LONESTAR', 'Momo Lonestar'),
         ('MOMO_ORANGE', 'Momo Orange'),
         ('VISA', 'Visa'),
+        ('BANK_TRANSFER', 'Bank Transfer'),
         ('OTHER', 'Other'),
     ]
 

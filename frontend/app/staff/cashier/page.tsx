@@ -313,10 +313,15 @@ function CashierDashboardContent() {
                                                                         </head>
                                                                         <body>
                                                                             <div class="header">
-                                                                                <h2>KWALE BEACH RESORT</h2>
-                                                                                <p>Invoice #${invoice.invoice_number}</p>
-                                                                                <p>Date: ${invoice.date_issued}</p>
-                                                                                <p>Location: ${invoice.reference_location || `Room ${invoice.room_number}`}</p>
+                                                                                <h2 style="margin:0;">KWALEE BEACH RESORT</h2>
+                                                                                <p style="margin:5px 0;">Kpakpa Kon, Marshall Road, Lower Margibi</p>
+                                                                                <p style="margin:5px 0;">kwaleebeachresort1@gmail.com</p>
+                                                                                <p style="margin:5px 0;">Tell: +231 88 174 4350 WhatsApp: +231 77 434 0843</p>
+                                                                                <div style="margin-top:20px; text-align:left;">
+                                                                                    <p>Invoice #${invoice.invoice_number}</p>
+                                                                                    <p>Date: ${invoice.date_issued}</p>
+                                                                                    <p>Location: ${invoice.reference_location || `Room ${invoice.room_number}`}</p>
+                                                                                </div>
                                                                             </div>
                                                                             ${invoice.items.map((item: any) => `
                                                                                 <div class="item">
@@ -331,7 +336,7 @@ function CashierDashboardContent() {
                                                                                 ` : ''}
                                                                                 <div class="item"><span>TOTAL:</span> <span>$${invoice.total_ft}</span></div>
                                                                             </div>
-                                                                            <p style="text-align:center; margin-top:40px;">Thank you for visiting!</p>
+                                                                            <p style="text-align:center; margin-top:40px; font-weight:bold;">Thanks for supporting KBR!</p>
                                                                         </body>
                                                                     </html>
                                                                 `;

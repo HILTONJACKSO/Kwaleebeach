@@ -27,6 +27,30 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all().order_by('-date_issued')
     serializer_class = InvoiceSerializer
 
+    def get_permissions(self):
+        if self.action in ['destroy', 'update', 'partial_update']:
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Only Admin can delete
+        if request.user.role != 'ADMIN':
+            return Response({'error': 'Only Admins can delete invoices.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Only allow deleting unpaid invoices to prevent financial gaps
+        if instance.is_paid:
+            return Response({'error': 'Cannot delete a paid invoice.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.role != 'ADMIN' and instance.is_paid:
+            return Response({'error': 'Only Admins can edit paid invoices.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
     @action(detail=True, methods=['post'], url_path='pay')
     def process_payment(self, request, pk=None):
         invoice = self.get_object()
