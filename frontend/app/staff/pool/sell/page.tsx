@@ -27,7 +27,7 @@ export default function PoolSellPage() {
     const [prices, setPrices] = useState({ adult: 5, kids: 3 });
 
     useEffect(() => {
-        fetch('/api/recreation/types/', {
+        fetch('/api/recreation/types/?t=' + Date.now(), {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}` }
         })
             .then(res => res.json())
