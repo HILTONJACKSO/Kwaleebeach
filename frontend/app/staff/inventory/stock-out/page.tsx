@@ -86,7 +86,7 @@ export default function StockOutPage() {
     };
 
     return (
-        <ProtectedRoute roles={['ADMIN']}>
+        <ProtectedRoute allowedRoles={['ADMIN']}>
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="flex items-center gap-4">
                     <div className="p-4 bg-red-50 text-red-500 rounded-[2rem]">
@@ -157,8 +157,8 @@ export default function StockOutPage() {
                                                     type="button"
                                                     onClick={() => setDepartment(dept)}
                                                     className={`py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border-2 ${department === dept
-                                                            ? 'border-red-500 bg-red-50 text-red-600'
-                                                            : 'border-gray-50 bg-gray-50 text-gray-400 hover:border-gray-200'
+                                                        ? 'border-red-500 bg-red-50 text-red-600'
+                                                        : 'border-gray-50 bg-gray-50 text-gray-400 hover:border-gray-200'
                                                         }`}
                                                 >
                                                     {dept.replace('_', ' ')}
