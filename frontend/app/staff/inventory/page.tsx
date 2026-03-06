@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, ArrowRightLeft, X, Save, History, Box, Truck, PlusCircle } from 'lucide-react';
+import { Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, ArrowRightLeft, X, Save, History, Box, Truck, PlusCircle, PackageX } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 
 interface InventoryStock {
     id: number;
@@ -40,6 +41,13 @@ export default function InventoryPage() {
             <InventoryPageContent />
         </ProtectedRoute>
     );
+}
+
+function AdminOnly({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
+    const userRoles = user?.roles && user.roles.length > 0 ? user.roles : [user?.role];
+    if (userRoles.includes('ADMIN')) return <>{children}</>;
+    return null;
 }
 
 function InventoryPageContent() {
@@ -111,6 +119,16 @@ function InventoryPageContent() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
+                    {/* Role-based check for Admin only buttons */}
+                    <AdminOnly>
+                        <Link
+                            href="/staff/inventory/stock-out"
+                            className="px-6 py-4 bg-white border-2 border-red-100 text-red-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                        >
+                            <PackageX size={18} /> Stock Out
+                        </Link>
+                    </AdminOnly>
+
                     <Link
                         href="/staff/inventory/transfer"
                         className="px-6 py-4 bg-white border-2 border-gray-100 text-gray-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:border-blue-500 hover:text-blue-600 transition-all flex items-center justify-center gap-2 shadow-sm"
