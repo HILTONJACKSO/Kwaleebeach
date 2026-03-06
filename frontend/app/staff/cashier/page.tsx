@@ -24,6 +24,8 @@ function CashierDashboardContent() {
     const { showNotification } = useUI();
     const { user } = useAuth();
     const [invoices, setInvoices] = useState<any[]>([]);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingInvoice, setEditingInvoice] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'invoices' | 'returns'>('invoices');
     const [filter, setFilter] = useState<'ALL' | 'UNPAID' | 'PAID'>('UNPAID');
@@ -90,6 +92,35 @@ function CashierDashboardContent() {
             } else {
                 const data = await res.json();
                 showNotification(data.error || 'Failed to delete invoice', 'error');
+            }
+        } catch (e) {
+            showNotification('Connection error', 'error');
+        }
+    };
+
+    const handleUpdateInvoice = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`/api/finance/invoices/${editingInvoice.id}/`, {
+                method: 'PATCH',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reference_location: editingInvoice.reference_location,
+                    discount_type: editingInvoice.discount_type,
+                    discount_amount: editingInvoice.discount_amount,
+                    discount_reason: editingInvoice.discount_reason
+                })
+            });
+            if (res.ok) {
+                showNotification('Invoice updated successfully', 'success');
+                setIsEditModalOpen(false);
+                fetchData();
+            } else {
+                const data = await res.json();
+                showNotification(data.error || 'Failed to update invoice', 'error');
             }
         } catch (e) {
             showNotification('Connection error', 'error');
@@ -380,7 +411,8 @@ function CashierDashboardContent() {
                                                         <div className="flex items-center gap-2 mr-2 border-r border-gray-100 pr-2">
                                                             <button
                                                                 onClick={() => {
-                                                                    showNotification("Edit Invoice feature coming soon. Please use inventory management for item changes.", "info");
+                                                                    setEditingInvoice({ ...invoice });
+                                                                    setIsEditModalOpen(true);
                                                                 }}
                                                                 className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
                                                                 title="Edit Invoice (Admin Only)"
@@ -562,6 +594,89 @@ function CashierDashboardContent() {
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Invoice Modal */}
+            {isEditModalOpen && editingInvoice && (
+                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="flex justify-between items-center mb-8">
+                            <div>
+                                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Edit Invoice</h3>
+                                <p className="text-gray-400 text-sm font-medium tracking-tight mt-1">Modifying Invoice #{editingInvoice.invoice_number}</p>
+                            </div>
+                            <button onClick={() => setIsEditModalOpen(false)} className="p-3 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-2xl transition-all">
+                                <RefreshCw className="rotate-45" size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUpdateInvoice} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Reference Location</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-300"
+                                        placeholder="e.g. Table T5"
+                                        value={editingInvoice.reference_location || ''}
+                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, reference_location: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Discount Type</label>
+                                    <select
+                                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        value={editingInvoice.discount_type || ''}
+                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, discount_type: e.target.value || null })}
+                                    >
+                                        <option value="">No Discount</option>
+                                        <option value="FIXED">Fixed Amount ($)</option>
+                                        <option value="PERCENT">Percentage (%)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Discount Amount</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-300"
+                                        value={editingInvoice.discount_amount}
+                                        onChange={(e) => setEditingInvoice({ ...editingInvoice, discount_amount: parseFloat(e.target.value) || 0 })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Discount Reason</label>
+                                <textarea
+                                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-300 h-24 resize-none"
+                                    placeholder="Enter reason for discount..."
+                                    value={editingInvoice.discount_reason || ''}
+                                    onChange={(e) => setEditingInvoice({ ...editingInvoice, discount_reason: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="pt-4 flex gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                    className="flex-1 px-8 py-4 bg-gray-100 text-gray-900 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-200 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-3 px-8 py-4 bg-blue-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
