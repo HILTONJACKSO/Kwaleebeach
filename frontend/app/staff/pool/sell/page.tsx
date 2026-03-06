@@ -32,8 +32,8 @@ export default function PoolSellPage() {
         })
             .then(res => res.json())
             .then(data => {
-                const poolAdult = data.find((p: any) => p.location === 'POOL' && p.name.includes('Adult'));
-                const poolKids = data.find((p: any) => p.location === 'POOL' && p.name.includes('Kids'));
+                const poolAdult = data.find((p: any) => p.location === 'POOL' && (p.name.includes('Adult') || p.name.includes('Teens')));
+                const poolKids = data.find((p: any) => p.location === 'POOL' && (p.name.includes('Kids') || p.name.includes('Kid')));
                 setPrices({
                     adult: poolAdult ? parseFloat(poolAdult.price) : 5,
                     kids: poolKids ? parseFloat(poolKids.price) : 3

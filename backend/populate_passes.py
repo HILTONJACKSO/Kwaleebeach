@@ -9,10 +9,10 @@ from recreation.models import PassType
 
 def populate_passes():
     passes = [
-        {"name": "Pool Day Pass (Adult)", "price": 5.00, "location": "POOL"},
-        {"name": "Pool Day Pass (Kids)", "price": 3.00, "location": "POOL"},
-        {"name": "Beach Access Pass (Adult)", "price": 5.00, "location": "BEACH"},
-        {"name": "Beach Access Pass (Kids)", "price": 3.00, "location": "BEACH"},
+        {"name": "Adult Pool Pass", "price": 5.00, "location": "POOL"},
+        {"name": "Kid Pool Pass", "price": 3.00, "location": "POOL"},
+        {"name": "Adult Beach Pass", "price": 5.00, "location": "BEACH"},
+        {"name": "Kid Beach Pass", "price": 3.00, "location": "BEACH"},
     ]
 
     print("Cleaning existing pass types...")

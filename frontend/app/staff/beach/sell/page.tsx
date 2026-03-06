@@ -32,8 +32,8 @@ export default function BeachSellPage() {
         })
             .then(res => res.json())
             .then(data => {
-                const beachAdult = data.find((p: any) => p.location === 'BEACH' && p.name.includes('Adult'));
-                const beachKids = data.find((p: any) => p.location === 'BEACH' && p.name.includes('Kids'));
+                const beachAdult = data.find((p: any) => p.location === 'BEACH' && (p.name.includes('Adult') || p.name.includes('Teens')));
+                const beachKids = data.find((p: any) => p.location === 'BEACH' && (p.name.includes('Kids') || p.name.includes('Kid')));
                 setPrices({
                     adult: beachAdult ? parseFloat(beachAdult.price) : 5,
                     kids: beachKids ? parseFloat(beachKids.price) : 3
