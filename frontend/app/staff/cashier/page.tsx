@@ -4,9 +4,11 @@ import { useUI } from '@/context/UIContext';
 import {
     DollarSign, Receipt, Clock, CheckCircle, Search,
     CreditCard, Banknote, RefreshCw, Package, Waves,
-    Utensils, FileText, ArrowUpRight, Wallet, Smartphone
+    Utensils, FileText, ArrowUpRight, Wallet, Smartphone,
+    Trash2, Edit, Lock
 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -20,6 +22,7 @@ export default function CashierDashboard() {
 
 function CashierDashboardContent() {
     const { showNotification } = useUI();
+    const { user } = useAuth();
     const [invoices, setInvoices] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'invoices' | 'returns'>('invoices');
@@ -40,6 +43,9 @@ function CashierDashboardContent() {
         localStorage.removeItem('yarvo_token');
         window.location.href = '/login';
     };
+
+    const userRoles = user?.roles && user.roles.length > 0 ? user.roles : [user?.role];
+    const isAdmin = userRoles.includes('ADMIN');
 
     const fetchData = async () => {
         try {
@@ -68,6 +74,25 @@ function CashierDashboardContent() {
             console.error(e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteInvoice = async (id: number) => {
+        if (!window.confirm('Are you sure you want to delete this invoice? This action cannot be undone.')) return;
+        try {
+            const res = await fetch(`/api/finance/invoices/${id}/`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                showNotification('Invoice deleted successfully', 'success');
+                fetchData();
+            } else {
+                const data = await res.json();
+                showNotification(data.error || 'Failed to delete invoice', 'error');
+            }
+        } catch (e) {
+            showNotification('Connection error', 'error');
         }
     };
 
@@ -351,6 +376,32 @@ function CashierDashboardContent() {
                                                     >
                                                         <Receipt size={18} />
                                                     </button>
+                                                    {isAdmin && (
+                                                        <div className="flex items-center gap-2 mr-2 border-r border-gray-100 pr-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    showNotification("Edit Invoice feature coming soon. Please use inventory management for item changes.", "info");
+                                                                }}
+                                                                className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                                                                title="Edit Invoice (Admin Only)"
+                                                            >
+                                                                <Edit size={18} />
+                                                            </button>
+                                                            {!invoice.is_paid ? (
+                                                                <button
+                                                                    onClick={() => handleDeleteInvoice(invoice.id)}
+                                                                    className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                                                    title="Delete Invoice (Admin Only)"
+                                                                >
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            ) : (
+                                                                <div className="p-2 text-gray-300" title="Cannot delete paid invoice">
+                                                                    <Lock size={18} />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                     {invoice.is_paid ? (
                                                         <div className="px-4 md:px-6 py-2 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-default">
                                                             Receipt
