@@ -217,7 +217,7 @@ function EditStaffForm() {
 
                 <div className="space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Professional Roles (Select all that apply)</label>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="flex flex-wrap gap-3">
                         {[
                             { id: 'ADMIN', label: 'Administrator' },
                             { id: 'FRONT_DESK', label: 'Front Desk' },
@@ -242,8 +242,8 @@ function EditStaffForm() {
                                     : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
                                     }`}
                             >
-                                {role.label}
-                                {staffData.roles?.includes(role.id) && <Shield size={14} className="text-[var(--color-primary)]" />}
+                                <span className="mr-3">{role.label}</span>
+                                {staffData.roles?.includes(role.id) && <Shield size={14} className="text-[var(--color-primary)] flex-shrink-0" />}
                             </button>
                         ))}
                     </div>
