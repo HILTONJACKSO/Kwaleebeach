@@ -30,6 +30,22 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
 
+    @action(detail=True, methods=['post'], url_path='reset-password')
+    def reset_password(self, request, pk=None):
+        user = self.get_object()
+        new_password = request.data.get('new_password')
+        
+        if not new_password:
+            return Response({'error': 'New password is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if len(new_password) < 6:
+            return Response({'error': 'Password must be at least 6 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({'message': 'Password reset successfully.'}, status=status.HTTP_200_OK)
+
 class RegisterView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdmin] # Only admins can create new staff users

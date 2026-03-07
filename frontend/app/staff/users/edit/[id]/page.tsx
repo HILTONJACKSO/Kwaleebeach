@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUI } from '@/context/UIContext';
 import { useAuth } from '@/context/AuthContext';
-import { User, Mail, Phone, Shield, Briefcase, Save, ArrowLeft } from 'lucide-react';
+import { User, Mail, Phone, Shield, Briefcase, Save, ArrowLeft, Key, Trash2, AlertTriangle } from 'lucide-react';
 import FormPageLayout from '@/components/FormPageLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -22,6 +22,9 @@ function EditStaffForm() {
     const { token } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [resetPassword, setResetPassword] = useState('');
+    const [resetting, setResetting] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const [staffData, setStaffData] = useState({
         first_name: '',
@@ -86,6 +89,63 @@ function EditStaffForm() {
             showNotification("Connection error", "error");
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handlePasswordReset = async () => {
+        if (!resetPassword || resetPassword.length < 6) {
+            showNotification("Password must be at least 6 characters.", "error");
+            return;
+        }
+
+        setResetting(true);
+        try {
+            const res = await fetch(`/api/core/users/${id}/reset-password/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ new_password: resetPassword })
+            });
+
+            if (res.ok) {
+                showNotification("Password reset successfully!", "success");
+                setResetPassword('');
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showNotification(data.error || "Failed to reset password", "error");
+            }
+        } catch (e) {
+            showNotification("Connection error", "error");
+        } finally {
+            setResetting(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        const confirmed = window.confirm(`Are you absolutely sure you want to delete ${staffData.first_name}'s account? This action cannot be undone.`);
+        if (!confirmed) return;
+
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/core/users/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (res.ok) {
+                showNotification("Staff account deleted permanently.", "success");
+                router.push('/staff/users');
+            } else {
+                showNotification("Failed to delete account", "error");
+                setDeleting(false);
+            }
+        } catch (e) {
+            showNotification("Connection error", "error");
+            setDeleting(false);
         }
     };
 
@@ -192,11 +252,67 @@ function EditStaffForm() {
                 <button
                     disabled={saving}
                     type="submit"
-                    className="w-full bg-gray-900 text-white py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-sm hover:bg-[var(--color-primary)] transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 disabled:opacity-50"
+                    className="w-full bg-gray-900 text-white py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-sm hover:bg-[var(--color-primary)] transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 disabled:opacity-50 mt-8"
                 >
                     {saving ? "Updating..." : <><Save size={20} /> Save Staff Profile</>}
                 </button>
             </form>
+
+            {/* DANGER ZONE */}
+            <div className="mt-16 pt-12 border-t-2 border-dashed border-red-200">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <AlertTriangle size={20} className="text-red-500" />
+                    </div>
+                    <h3 className="text-xl font-black text-red-500 uppercase tracking-widest">Danger Zone</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Reset Password */}
+                    <div className="bg-red-50/50 p-6 rounded-[2rem] border border-red-100">
+                        <h4 className="font-black text-gray-900 mb-2">Force Password Reset</h4>
+                        <p className="text-xs text-gray-500 font-medium mb-6">Manually override the password for this staff member.</p>
+
+                        <div className="space-y-4">
+                            <div className="relative">
+                                <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    type="password"
+                                    placeholder="Enter new password"
+                                    className="w-full pl-12 pr-6 py-4 bg-white rounded-2xl border border-gray-200 focus:ring-2 focus:ring-red-500 text-sm font-bold transition-all"
+                                    value={resetPassword}
+                                    onChange={(e) => setResetPassword(e.target.value)}
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handlePasswordReset}
+                                disabled={resetting || !resetPassword}
+                                className="w-full py-3 bg-red-100 text-red-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-200 transition-all disabled:opacity-50"
+                            >
+                                {resetting ? 'Resetting...' : 'Reset Password'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Delete Account */}
+                    <div className="bg-red-50/50 p-6 rounded-[2rem] border border-red-100 flex flex-col justify-between">
+                        <div>
+                            <h4 className="font-black text-gray-900 mb-2">Delete Account</h4>
+                            <p className="text-xs text-gray-500 font-medium mb-6">Permanently remove this staff member from the system. This cannot be undone.</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleDeleteAccount}
+                            disabled={deleting}
+                            className="w-full py-4 bg-red-500 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200 disabled:opacity-50"
+                        >
+                            <Trash2 size={16} /> {deleting ? 'Deleting...' : 'Delete Staff Account'}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </FormPageLayout>
     );
 }
