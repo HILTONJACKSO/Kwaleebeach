@@ -160,41 +160,64 @@ class AccessPassViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='sell')
     def sell_pass(self, request):
         location = request.data.get('location') # 'POOL' or 'BEACH'
-        adult_count = int(request.data.get('adult_count', 0))
-        kids_count = int(request.data.get('kids_count', 0))
-        payment_method = request.data.get('payment_method') # Optional: 'CASH', 'MOMO_LONESTAR', etc.
+        payment_method = request.data.get('payment_method') or request.data.get('payment_mode')
         guest_name = request.data.get('guest_name', 'Walk-in')
 
-        if not location:
-            return Response({'error': 'Location is required'}, status=status.HTTP_400_BAD_REQUEST)
+        pass_type_id = request.data.get('pass_type_id')
+        custom_name = request.data.get('custom_name')
+        custom_price = request.data.get('custom_price')
 
-        # Find PassTypes
-        adult_type = None
-        kids_type = None
-        
-        if adult_count > 0:
-            adult_type = PassType.objects.filter(location=location, name__icontains='Adult').first()
-            if not adult_type:
-                return Response({'error': f'No Adult pass type found for {location}'}, status=status.HTTP_404_NOT_FOUND)
-        
-        if kids_count > 0:
-            kids_type = PassType.objects.filter(location=location, name__icontains='Kids').first()
-            if not kids_type:
-                return Response({'error': f'No Kids pass type found for {location}'}, status=status.HTTP_404_NOT_FOUND)
+        adult_count = int(request.data.get('adult_count', 0))
+        kids_count = int(request.data.get('kids_count', 0))
 
-        total_price = 0
         pass_items = []
+        total_price = 0
 
-        if adult_count > 0:
-            total_price += float(adult_type.price) * adult_count
-            pass_items.append({'type': adult_type, 'count': adult_count})
-        
-        if kids_count > 0:
-            total_price += float(kids_type.price) * kids_count
-            pass_items.append({'type': kids_type, 'count': kids_count})
+        # Case 1: Custom Event Pass
+        if custom_name and custom_price is not None:
+            if not location:
+                return Response({'error': 'Location is required for custom passes'}, status=status.HTTP_400_BAD_REQUEST)
+            pass_type, _ = PassType.objects.get_or_create(
+                name=custom_name,
+                defaults={'price': custom_price, 'location': location}
+            )
+            if float(pass_type.price) != float(custom_price):
+                pass_type.price = custom_price
+                pass_type.save()
+            pass_items.append({'type': pass_type, 'count': 1})
+            total_price += float(pass_type.price)
+
+        # Case 2: Single/Bulk pass type ID (from main dashboard)
+        elif pass_type_id:
+            try:
+                pass_type = PassType.objects.get(id=pass_type_id)
+                location = pass_type.location
+                pass_items.append({'type': pass_type, 'count': 1})
+                total_price += float(pass_type.price)
+            except PassType.DoesNotExist:
+                return Response({'error': 'Invalid pass type'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Case 3: Cart System (Adult/Kids)
+        else:
+            if not location:
+                return Response({'error': 'Location is required'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if adult_count > 0:
+                adult_type = PassType.objects.filter(location=location, name__icontains='Adult').first()
+                if not adult_type:
+                    return Response({'error': f'No Adult pass type found for {location}'}, status=status.HTTP_404_NOT_FOUND)
+                total_price += float(adult_type.price) * adult_count
+                pass_items.append({'type': adult_type, 'count': adult_count})
+            
+            if kids_count > 0:
+                kids_type = PassType.objects.filter(location=location, name__icontains='Kids').first()
+                if not kids_type:
+                    return Response({'error': f'No Kids pass type found for {location}'}, status=status.HTTP_404_NOT_FOUND)
+                total_price += float(kids_type.price) * kids_count
+                pass_items.append({'type': kids_type, 'count': kids_count})
 
         if not pass_items:
-            return Response({'error': 'No guests selected'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No valid pass type or guests selected'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create Access Passes
         created_passes = []
@@ -240,11 +263,12 @@ class AccessPassViewSet(viewsets.ModelViewSet):
                 invoice.balance_ptd = 0
                 invoice.save()
 
-        return Response({
-            'message': 'Success',
-            'invoice_id': invoice.id if invoice else None,
-            'pass_ids': [p.id for p in created_passes]
-        })
+        # Check if the frontend expects a serialized pass (for the PrintablePass popup)
+        if len(created_passes) > 0:
+            serializer = AccessPassSerializer(created_passes[0])
+            return Response(serializer.data)
+        
+        return Response({'error': 'Failed to create pass'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'], url_path='recent')
     def recent(self, request):
