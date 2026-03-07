@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, ArrowRightLeft, X, Save, History, Box, Truck, PlusCircle, PackageX } from 'lucide-react';
+import { Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, ArrowRightLeft, X, Save, History, Box, Truck, PlusCircle, PackageX, Trash2 } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -56,6 +56,7 @@ function InventoryPageContent() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('ALL');
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const fetchData = async () => {
         try {
@@ -104,6 +105,35 @@ function InventoryPageContent() {
                 return 'bg-rose-50 text-rose-600 border-rose-100 animate-pulse';
             default:
                 return 'bg-gray-50 text-gray-600 border-gray-100';
+        }
+    };
+
+    const handleDelete = async (item: InventoryItem) => {
+        const confirmDelete = window.confirm(`Are you absolutely sure you want to delete ${item.name} (SKU: ${item.sku})? This will permanently remove all stock history for this item.`);
+        if (!confirmDelete) return;
+
+        setDeletingId(item.id);
+        try {
+            const res = await fetch(`/api/inventory/items/${item.id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                }
+            });
+
+            if (res.ok || res.status === 204) {
+                showNotification(`${item.name} has been deleted.`, 'success');
+                // Refresh inventory list locally instead of full refetch
+                setInventory(prev => prev.filter(i => i.id !== item.id));
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showNotification(data.error || 'Failed to delete item', 'error');
+            }
+        } catch (e) {
+            console.error("Delete error:", e);
+            showNotification('Connection error while deleting', 'error');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -251,12 +281,24 @@ function InventoryPageContent() {
                                         </div>
                                     </td>
                                     <td className="px-8 py-6 text-right">
-                                        <Link
-                                            href={`/staff/inventory/edit/${item.id}`}
-                                            className="px-4 py-2 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
-                                        >
-                                            View & Edit
-                                        </Link>
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Link
+                                                href={`/staff/inventory/edit/${item.id}`}
+                                                className="px-4 py-2 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
+                                            >
+                                                View & Edit
+                                            </Link>
+                                            <AdminOnly>
+                                                <button
+                                                    onClick={() => handleDelete(item)}
+                                                    disabled={deletingId === item.id}
+                                                    className="p-2 border border-red-100 text-red-500 rounded-xl hover:bg-red-50 hover:border-red-200 transition-all disabled:opacity-50"
+                                                    title="Delete Item"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </AdminOnly>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

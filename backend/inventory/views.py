@@ -18,6 +18,15 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'sku']
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Check if user is authenticated and is admin
+        if not request.user.is_authenticated or request.user.role != 'ADMIN':
+            return Response({'error': 'Only Admins can delete inventory items.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=True, methods=['post'], url_path='add-stock')
     @transaction.atomic
     def add_stock(self, request, pk=None):
