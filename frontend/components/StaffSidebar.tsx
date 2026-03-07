@@ -54,7 +54,7 @@ export default function StaffSidebar({ isMobileOpen, onClose }: StaffSidebarProp
         { name: 'Events', href: '/staff/events', icon: <Calendar size={20} />, roles: ['ADMIN', 'FRONT_DESK'] },
         { name: 'Returns', href: '/staff/returns', icon: <RefreshCw size={20} />, roles: ['ADMIN', 'CASHIER', 'FRONT_DESK'] },
         { name: 'Finance', href: '/staff/finance', icon: <Landmark size={20} />, roles: ['ADMIN'] },
-        { name: 'Payroll', href: '/staff/payroll', icon: <Banknote size={20} />, roles: ['ADMIN'] },
+        { name: 'Payroll & Vouchers', href: '/staff/payroll', icon: <Banknote size={20} />, roles: ['ADMIN'] },
         { name: 'Reports', href: '/staff/reports', icon: <FileText size={20} />, roles: ['ADMIN'] },
         { name: 'Analytics', href: '/staff/analytics', icon: <PieChart size={20} />, roles: ['ADMIN'] },
         { name: 'Staff', href: '/staff/users', icon: <Users size={20} />, roles: ['ADMIN'] },

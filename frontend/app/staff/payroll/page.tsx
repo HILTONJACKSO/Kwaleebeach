@@ -102,9 +102,6 @@ function PayrollDashboardContent() {
                     <p className="text-gray-500 font-medium tracking-tight text-sm">Manage employee compensation and company disbursements.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
-                    <Link href="/staff/payroll/new" className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
-                        <Plus size={18} /> New Voucher
-                    </Link>
                     <button className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-xs font-black uppercase tracking-widest">
                         <Banknote size={18} /> Process Payroll
                     </button>

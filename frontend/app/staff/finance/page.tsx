@@ -11,6 +11,7 @@ import {
     FileText,
     Activity
 } from 'lucide-react';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function FinanceDashboard() {
@@ -100,6 +101,9 @@ function FinanceDashboardContent() {
                     <p className="text-gray-500 font-medium tracking-tight text-sm">Manage Chart of Accounts and General Ledger transactions.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
+                    <Link href="/staff/payroll/new" className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
+                        <Plus size={18} /> New Voucher
+                    </Link>
                     <button className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
                         <FileText size={18} /> Generate Reports
                     </button>
