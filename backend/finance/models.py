@@ -122,6 +122,66 @@ class Voucher(models.Model):
     def __str__(self):
         return f"Voucher {self.voucher_number}"
 
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        old_status = False
+        if not is_new:
+            old_instance = Voucher.objects.get(pk=self.pk)
+            old_status = old_instance.is_approved
+
+        super().save(*args, **kwargs)
+
+        # Trigger transaction creation on approval
+        if self.is_approved and not old_status:
+            self.create_ledger_transaction()
+
+    def create_ledger_transaction(self):
+        """
+        Creates a Transaction record based on voucher type.
+        """
+        try:
+            cash_account = Account.objects.get(code='1000') # Default Cash
+            
+            # Mapping logic
+            debit_acc = None
+            credit_acc = None
+            
+            if self.main_account == 'OTHER_REVENUE':
+                # Debit Cash (+), Credit Revenue (+)
+                debit_acc = cash_account
+                credit_acc = Account.objects.get(code='4200') # Other Revenue
+            elif self.main_account == 'PURCHASES':
+                # Debit Purchase/Inventory (+), Credit Cash (-)
+                # Mapping specific purchases could be more granular
+                debit_acc = Account.objects.get(code='5100') # Supplies/Inventory Default
+                credit_acc = cash_account
+            elif self.main_account == 'EXPENSE':
+                # Debit Expense (+), Credit Cash (-)
+                debit_acc = Account.objects.get(code='5900') # Misc Expense Default
+                # Try to find a more specific expense account if possible
+                if 'UTILITIES' in self.voucher_type: debit_acc = Account.objects.get(code='5200')
+                elif 'MARKETING' in self.voucher_type: debit_acc = Account.objects.get(code='5300')
+                credit_acc = cash_account
+            elif self.main_account == 'ASSETS':
+                # Debit Asset (+), Credit Cash (-)
+                debit_acc = Account.objects.get(code='1000') # Should be an asset account
+                credit_acc = cash_account
+            elif self.main_account == 'LIABILITY':
+                # Debit Cash (+), Credit Liability (+)
+                debit_acc = cash_account
+                credit_acc = Account.objects.get(code='2000')
+
+            if debit_acc and credit_acc:
+                Transaction.objects.create(
+                    description=f"Voucher {self.voucher_number} - {self.payee}",
+                    debit_account=debit_acc,
+                    credit_account=credit_acc,
+                    amount=self.total_amount
+                )
+        except Account.DoesNotExist:
+            import logging
+            logging.error(f"Failed to create transaction for Voucher {self.voucher_number}: Default accounts missing.")
+
 class Invoice(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
     reference_location = models.CharField(max_length=100, blank=True, null=True, help_text="Direct room/table reference if no booking (e.g. Table T5)")

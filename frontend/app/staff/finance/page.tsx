@@ -133,7 +133,7 @@ function FinanceDashboardContent() {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 5000);
+        const interval = setInterval(fetchData, 3000);
         return () => clearInterval(interval);
     }, []);
 
