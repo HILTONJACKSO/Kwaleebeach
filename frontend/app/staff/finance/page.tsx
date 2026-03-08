@@ -10,7 +10,8 @@ import {
     ArrowRightLeft,
     FileText,
     Activity,
-    X
+    X,
+    CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -26,7 +27,9 @@ export default function FinanceDashboard() {
 function FinanceDashboardContent() {
     const [accounts, setAccounts] = useState<any[]>([]);
     const [transactions, setTransactions] = useState<any[]>([]);
+    const [vouchers, setVouchers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [voucherSearch, setVoucherSearch] = useState('');
     const [isAddingEntry, setIsAddingEntry] = useState(false);
     const [entryLoading, setEntryLoading] = useState(false);
     const [entryForm, setEntryForm] = useState({
@@ -39,11 +42,14 @@ function FinanceDashboardContent() {
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('yarvo_token');
-            const [accRes, txRes] = await Promise.all([
+            const [accRes, txRes, vouRes] = await Promise.all([
                 fetch('/api/finance/accounts/', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
                 fetch('/api/finance/transactions/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch('/api/finance/vouchers/', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);
@@ -55,10 +61,34 @@ function FinanceDashboardContent() {
                 const txData = await txRes.json();
                 setTransactions(Array.isArray(txData) ? txData : []);
             }
+            if (vouRes.ok) {
+                const vouData = await vouRes.json();
+                setVouchers(Array.isArray(vouData) ? vouData : []);
+            }
         } catch (error) {
             console.error("Error fetching financial data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleApproveVoucher = async (id: number) => {
+        try {
+            const res = await fetch(`/api/finance/vouchers/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                },
+                body: JSON.stringify({ is_approved: true }),
+            });
+            if (res.ok) {
+                fetchData();
+            } else {
+                alert("Failed to approve voucher.");
+            }
+        } catch (error) {
+            console.error("Approval error:", error);
         }
     };
 
@@ -357,6 +387,82 @@ function FinanceDashboardContent() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            {/* Expense Vouchers Table */}
+            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-8 border-b border-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <h2 className="text-xl font-black text-gray-900 tracking-tight">Expense Vouchers</h2>
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search vouchers..."
+                            value={voucherSearch}
+                            onChange={(e) => setVoucherSearch(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                    </div>
+                </div>
+                <div className="overflow-x-auto scrollbar-hide">
+                    <table className="w-full text-left min-w-[800px]">
+                        <thead>
+                            <tr className="border-b border-gray-50">
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Voucher #</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Payee</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Reference</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Approval</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {vouchers.filter(v =>
+                                v.voucher_number.toLowerCase().includes(voucherSearch.toLowerCase()) ||
+                                v.payee.toLowerCase().includes(voucherSearch.toLowerCase()) ||
+                                v.voucher_type.toLowerCase().includes(voucherSearch.toLowerCase())
+                            ).length > 0 ? vouchers.filter(v =>
+                                v.voucher_number.toLowerCase().includes(voucherSearch.toLowerCase()) ||
+                                v.payee.toLowerCase().includes(voucherSearch.toLowerCase()) ||
+                                v.voucher_type.toLowerCase().includes(voucherSearch.toLowerCase())
+                            ).map((vou) => (
+                                <tr key={vou.id} className="hover:bg-gray-50/50 transition-colors group">
+                                    <td className="px-8 py-5">
+                                        <div className="text-sm font-black text-gray-900">{vou.voucher_number}</div>
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{vou.voucher_type}</div>
+                                    </td>
+                                    <td className="px-8 py-5">
+                                        <div className="text-sm font-bold text-gray-500">{vou.payee}</div>
+                                    </td>
+                                    <td className="px-8 py-5 text-center">
+                                        <span className="px-3 py-1 bg-gray-100 rounded-full text-[10px] font-black text-gray-500 uppercase tracking-widest">{vou.main_account || 'OTHER'}</span>
+                                    </td>
+                                    <td className="px-8 py-5 text-right font-black text-gray-900 text-sm">
+                                        ${parseFloat(vou.total_amount).toFixed(2)}
+                                    </td>
+                                    <td className="px-8 py-5 text-right">
+                                        {vou.is_approved ? (
+                                            <div className="flex items-center justify-end gap-1 text-emerald-500">
+                                                <CheckCircle2 size={14} />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Approved</span>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleApproveVoucher(vou.id)}
+                                                className="px-4 py-1.5 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors"
+                                            >
+                                                Approve
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={5} className="px-8 py-12 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No vouchers found</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

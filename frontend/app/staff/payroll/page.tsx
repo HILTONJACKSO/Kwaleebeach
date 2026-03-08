@@ -25,38 +25,22 @@ export default function PayrollDashboard() {
 
 function PayrollDashboardContent() {
     const [salaries, setSalaries] = useState<any[]>([]);
-    const [vouchers, setVouchers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [salRes, vouRes] = await Promise.all([
-                    fetch('/api/finance/salaries/', {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                        }
-                    }),
-                    fetch('/api/finance/vouchers/', {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                        }
-                    })
-                ]);
+                const salRes = await fetch('/api/finance/salaries/', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                    }
+                });
                 if (!salRes.ok) {
                     console.warn(`Failed to fetch salaries (Status: ${salRes.status}).`);
                     setSalaries([]);
                 } else {
                     const salData = await salRes.json();
                     setSalaries(Array.isArray(salData) ? salData : []);
-                }
-
-                if (!vouRes.ok) {
-                    console.warn(`Failed to fetch vouchers (Status: ${vouRes.status}).`);
-                    setVouchers([]);
-                } else {
-                    const vouData = await vouRes.json();
-                    setVouchers(Array.isArray(vouData) ? vouData : []);
                 }
             } catch (error) {
                 console.error("Error fetching payroll data:", error);
@@ -76,18 +60,18 @@ function PayrollDashboardContent() {
             color: 'bg-blue-50'
         },
         {
-            name: 'Pending Vouchers',
-            value: '$' + (Array.isArray(vouchers) ? vouchers.filter(v => !v.is_approved).reduce((sum, v) => sum + parseFloat(v.total_amount || 0), 0) : 0).toFixed(2),
-            icon: <Clock className="text-orange-600" />,
-            sub: `${Array.isArray(vouchers) ? vouchers.filter(v => !v.is_approved).length : 0} Awaiting Approval`,
-            color: 'bg-orange-50'
+            name: 'Total Paid',
+            value: '$' + (Array.isArray(salaries) ? salaries.filter(s => s.is_paid).reduce((sum, s) => sum + parseFloat(s.net_pay || 0), 0) : 0).toFixed(2),
+            icon: <CheckCircle2 className="text-emerald-600" />,
+            sub: 'Processed',
+            color: 'bg-emerald-50'
         },
         {
-            name: 'Total Expenses',
-            value: '$' + ((Array.isArray(salaries) ? salaries.reduce((sum, s) => sum + parseFloat(s.net_pay || 0), 0) : 0) + (Array.isArray(vouchers) ? vouchers.reduce((sum, v) => sum + parseFloat(v.total_amount || 0), 0) : 0)).toFixed(2),
-            icon: <Receipt className="text-red-600" />,
-            sub: 'This Month',
-            color: 'bg-red-50'
+            name: 'Total Pending',
+            value: '$' + (Array.isArray(salaries) ? salaries.filter(s => !s.is_paid).reduce((sum, s) => sum + parseFloat(s.net_pay || 0), 0) : 0).toFixed(2),
+            icon: <Clock className="text-orange-600" />,
+            sub: 'Awaiting Payment',
+            color: 'bg-orange-50'
         }
     ];
 
@@ -97,9 +81,9 @@ function PayrollDashboardContent() {
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
                 <div className="flex-1">
                     <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        Payroll & Vouchers <Banknote className="text-blue-600" size={32} />
+                        Payroll <Banknote className="text-blue-600" size={32} />
                     </h1>
-                    <p className="text-gray-500 font-medium tracking-tight text-sm">Manage employee compensation and company disbursements.</p>
+                    <p className="text-gray-500 font-medium tracking-tight text-sm">Manage employee compensation and salary processing.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
                     <button className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-xs font-black uppercase tracking-widest">
@@ -124,115 +108,53 @@ function PayrollDashboardContent() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                {/* Employee Salary List */}
-                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-gray-50 flex items-center justify-between">
-                        <h2 className="text-xl font-black text-gray-900 tracking-tight">Staff Salaries</h2>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                            <Filter size={18} />
-                        </button>
-                    </div>
-                    <div className="overflow-x-auto scrollbar-hide">
-                        <table className="w-full text-left min-w-[600px]">
-                            <thead>
-                                <tr className="border-b border-gray-50">
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Employee</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Period</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Net Pay</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {salaries.length > 0 ? salaries.map((sal) => (
-                                    <tr key={sal.id} className="hover:bg-gray-50/50 transition-colors group">
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-black text-xs">
-                                                    {sal.employee_name?.substring(0, 2).toUpperCase()}
-                                                </div>
-                                                <div className="text-sm font-bold text-gray-900">{sal.employee_name}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5 text-xs font-bold text-gray-500">
-                                            {sal.month}/{sal.year}
-                                        </td>
-                                        <td className="px-8 py-5 text-sm font-black text-gray-900">
-                                            ${parseFloat(sal.net_pay).toFixed(2)}
-                                        </td>
-                                        <td className="px-8 py-5 text-right">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${sal.is_paid ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
-                                                {sal.is_paid ? 'Paid' : 'Pending'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={4} className="px-8 py-12 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No payroll records found</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                    <h2 className="text-xl font-black text-gray-900 tracking-tight">Staff Salaries</h2>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                        <Filter size={18} />
+                    </button>
                 </div>
-
-                {/* Expense Vouchers */}
-                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <h2 className="text-xl font-black text-gray-900 tracking-tight">Expense Vouchers</h2>
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Search vouchers..."
-                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto scrollbar-hide">
-                        <table className="w-full text-left min-w-[700px]">
-                            <thead>
-                                <tr className="border-b border-gray-50">
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Voucher #</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Payee</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Approval</th>
+                <div className="overflow-x-auto scrollbar-hide">
+                    <table className="w-full text-left min-w-[600px]">
+                        <thead>
+                            <tr className="border-b border-gray-50">
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Employee</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Period</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Net Pay</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {salaries.length > 0 ? salaries.map((sal) => (
+                                <tr key={sal.id} className="hover:bg-gray-50/50 transition-colors group">
+                                    <td className="px-8 py-5">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-black text-xs">
+                                                {sal.employee_name?.substring(0, 2).toUpperCase()}
+                                            </div>
+                                            <div className="text-sm font-bold text-gray-900">{sal.employee_name}</div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-5 text-xs font-bold text-gray-500">
+                                        {sal.month}/{sal.year}
+                                    </td>
+                                    <td className="px-8 py-5 text-sm font-black text-gray-900">
+                                        ${parseFloat(sal.net_pay).toFixed(2)}
+                                    </td>
+                                    <td className="px-8 py-5 text-right">
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${sal.is_paid ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
+                                            {sal.is_paid ? 'Paid' : 'Pending'}
+                                        </span>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {vouchers.length > 0 ? vouchers.map((vou) => (
-                                    <tr key={vou.id} className="hover:bg-gray-50/50 transition-colors group">
-                                        <td className="px-8 py-5">
-                                            <div className="text-sm font-black text-gray-900">{vou.voucher_number}</div>
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{vou.voucher_type}</div>
-                                        </td>
-                                        <td className="px-8 py-5 text-sm font-bold text-gray-500">
-                                            {vou.payee}
-                                        </td>
-                                        <td className="px-8 py-5 text-sm font-black text-gray-900">
-                                            ${parseFloat(vou.total_amount).toFixed(2)}
-                                        </td>
-                                        <td className="px-8 py-5 text-right">
-                                            {vou.is_approved ? (
-                                                <div className="flex items-center justify-end gap-1 text-emerald-500">
-                                                    <CheckCircle2 size={14} />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest">Approved</span>
-                                                </div>
-                                            ) : (
-                                                <button className="px-4 py-1.5 bg-gray-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors">
-                                                    Approve
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={4} className="px-8 py-12 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No disbursements recorded</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                            )) : (
+                                <tr>
+                                    <td colSpan={4} className="px-8 py-12 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No payroll records found</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
