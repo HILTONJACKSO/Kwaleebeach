@@ -39,14 +39,81 @@ class Transaction(models.Model):
         return f"TX: {self.description} (${self.amount})"
 
 class Voucher(models.Model):
-    VOUCHER_TYPES = [
+    MAIN_ACCOUNT_CHOICES = [
+        ('OTHER_REVENUE', 'Other Income Revenue'),
+        ('PURCHASES', 'Purchases'),
+        ('EXPENSE', 'Expense'),
+        ('ASSETS', 'Assets'),
+        ('LIABILITY', 'Liability'),
+    ]
+
+    VOUCHER_TYPE_CHOICES = [
+        # Other Revenue
+        ('OTHER_REV_RECEPTION', 'Other revenue reception'),
+        ('OTHER_REV_FOOD', 'Other revenue food'),
+        ('OTHER_REV_DRINK', 'Other revenue drink'),
+        ('OTHER_REV_ROOM', 'Other revenue room'),
+        ('OTHER_REV_BOUTIQUE', 'Other revenue boutique'),
+        ('OTHER_REV_PACKAGE', 'Other revenue package/event'),
+        
+        # Purchases
+        ('PURCHASE_FOOD', 'Local purchases food'),
+        ('PURCHASE_DRINKS', 'Local purchases drinks'),
+        ('PURCHASE_BOUTIQUE', 'Local purchases boutique'),
+        ('PURCHASE_OTHER', 'Local purchases Other'),
+        
+        # Expenses
+        ('MARKETING', 'Marketing'),
+        ('SELLING_EXPENSES', 'Selling expenses'),
+        ('COMMISSION', 'Commission'),
+        ('EMPLOYEE_BENEFITS', 'Employee benefits programs/nasscor'),
+        ('FREIGHT', 'Freight'),
+        ('INSURANCE', 'Insurance'),
+        ('LAUNDRY_CLEANING', 'Laundry and cleaning service'),
+        ('LEGAL_PROFESSIONAL', 'Legal and professional services'),
+        ('POSTAGE', 'Postage'),
+        ('REPAIRS', 'Repairs'),
+        ('SUPPLIES_KITCHEN', 'Supplies kitchen'),
+        ('SUPPLIES_FUEL', 'Supplies fuel generator'),
+        ('SUPPLIES_OFFICE', 'Supply office'),
+        ('SUPPLIES_GAS', 'Supplies gas'),
+        ('SUPPLIES_STAFF_FOOD', 'Supplies staff food'),
+        ('SUPPLIES_RESTAURANTS', 'Supplies restaurants'),
+        ('SUPPLIES_ROOM', 'Supplies room'),
+        ('SUPPLIES_OTHER', 'Supplies other'),
+        ('TAX_WITHHOLDING', 'Taxes withholding Tax'),
+        ('TAX_DUTY', 'Taxes duty'),
+        ('TAX_OTHER', 'Taxes other'),
+        ('TAX_WITHHOLDING_RENT', 'Taxes withholding on rent'),
+        ('TAX_PAID_2_PERCENT', 'Taxes paid 2% tax'),
+        ('TAX_WITHHELD_2_PERCENT', 'Taxes withheld 2% tax'),
+        ('TAX_GST', 'Taxes GST'),
+        ('TELEPHONE_INTERNET', 'Telephone / Internet'),
+        ('TRAVEL_ENT', 'Travel & Entertainment'),
+        ('UTILITIES', 'Utilities'),
+        ('WAGES_DAILY', 'Wages - Daily hire'),
+        ('WAGES_BONUS', 'Wages - bonus'),
+        ('LOCAL_TRANS', 'Local transportation'),
+        ('EXPENSE_MISC', 'Expenses general misc. Expense'),
+        
+        # Assets
+        ('CONSTRUCTION', 'Construction'),
+        ('RENOVATION', 'Renovation'),
+        
+        # Liability
+        ('ACCOUNTS_PAYABLE', 'Accounts payable'),
+        ('SALES_TAX_PAYABLE', 'Sales Tax Payable'),
+        
+        # Legacy
         ('CASH_PAYMENT', 'Cash Payment'),
         ('CASH_RECEIPT', 'Cash Receipt'),
         ('JOURNAL', 'Journal Voucher'),
     ]
+
     voucher_number = models.CharField(max_length=50, unique=True)
     date = models.DateField(auto_now_add=True)
-    voucher_type = models.CharField(max_length=20, choices=VOUCHER_TYPES)
+    main_account = models.CharField(max_length=50, choices=MAIN_ACCOUNT_CHOICES, default='EXPENSE')
+    voucher_type = models.CharField(max_length=50, choices=VOUCHER_TYPE_CHOICES)
     payee = models.CharField(max_length=255)
     description = models.TextField()
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)

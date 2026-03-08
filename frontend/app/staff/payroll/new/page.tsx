@@ -18,11 +18,86 @@ function NewVoucherContent() {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         voucher_number: `VCH-${Math.floor(Math.random() * 100000)}`,
-        voucher_type: 'CASH_PAYMENT',
+        main_account: 'EXPENSE',
+        voucher_type: '',
         payee: '',
         description: '',
         total_amount: '',
     });
+
+    const ACCOUNT_CATEGORIES: Record<string, { label: string, types: { value: string, label: string }[] }> = {
+        OTHER_REVENUE: {
+            label: 'Other Income Revenue',
+            types: [
+                { value: 'OTHER_REV_RECEPTION', label: 'Other revenue reception' },
+                { value: 'OTHER_REV_FOOD', label: 'Other revenue food' },
+                { value: 'OTHER_REV_DRINK', label: 'Other revenue drink' },
+                { value: 'OTHER_REV_ROOM', label: 'Other revenue room' },
+                { value: 'OTHER_REV_BOUTIQUE', label: 'Other revenue boutique' },
+                { value: 'OTHER_REV_PACKAGE', label: 'Other revenue package/event' },
+            ]
+        },
+        PURCHASES: {
+            label: 'Purchases',
+            types: [
+                { value: 'PURCHASE_FOOD', label: 'Local purchases food' },
+                { value: 'PURCHASE_DRINKS', label: 'Local purchases drinks' },
+                { value: 'PURCHASE_BOUTIQUE', label: 'Local purchases boutique' },
+                { value: 'PURCHASE_OTHER', label: 'Local purchases Other' },
+            ]
+        },
+        EXPENSE: {
+            label: 'Expense',
+            types: [
+                { value: 'MARKETING', label: 'Marketing' },
+                { value: 'SELLING_EXPENSES', label: 'Selling expenses' },
+                { value: 'COMMISSION', label: 'Commission' },
+                { value: 'EMPLOYEE_BENEFITS', label: 'Employee benefits programs/nasscor' },
+                { value: 'FREIGHT', label: 'Freight' },
+                { value: 'INSURANCE', label: 'Insurance' },
+                { value: 'LAUNDRY_CLEANING', label: 'Laundry and cleaning service' },
+                { value: 'LEGAL_PROFESSIONAL', label: 'Legal and professional services' },
+                { value: 'POSTAGE', label: 'Postage' },
+                { value: 'REPAIRS', label: 'Repairs' },
+                { value: 'SUPPLIES_KITCHEN', label: 'Supplies kitchen' },
+                { value: 'SUPPLIES_FUEL', label: 'Supplies fuel generator' },
+                { value: 'SUPPLIES_OFFICE', label: 'Supply office' },
+                { value: 'SUPPLIES_GAS', label: 'Supplies gas' },
+                { value: 'SUPPLIES_STAFF_FOOD', label: 'Supplies staff food' },
+                { value: 'SUPPLIES_RESTAURANTS', label: 'Supplies restaurants' },
+                { value: 'SUPPLIES_ROOM', label: 'Supplies room' },
+                { value: 'SUPPLIES_OTHER', label: 'Supplies other' },
+                { value: 'TAX_WITHHOLDING', label: 'Taxes withholding Tax' },
+                { value: 'TAX_DUTY', label: 'Taxes duty' },
+                { value: 'TAX_OTHER', label: 'Taxes other' },
+                { value: 'TAX_WITHHOLDING_RENT', label: 'Taxes withholding on rent' },
+                { value: 'TAX_PAID_2_PERCENT', label: 'Taxes paid 2% tax' },
+                { value: 'TAX_WITHHELD_2_PERCENT', label: 'Taxes withheld 2% tax' },
+                { value: 'TAX_GST', label: 'Taxes GST' },
+                { value: 'TELEPHONE_INTERNET', label: 'Telephone / Internet' },
+                { value: 'TRAVEL_ENT', label: 'Travel & Entertainment' },
+                { value: 'UTILITIES', label: 'Utilities' },
+                { value: 'WAGES_DAILY', label: 'Wages - Daily hire' },
+                { value: 'WAGES_BONUS', label: 'Wages - bonus' },
+                { value: 'LOCAL_TRANS', label: 'Local transportation' },
+                { value: 'EXPENSE_MISC', label: 'Expenses general misc. Expense' },
+            ]
+        },
+        ASSETS: {
+            label: 'Assets',
+            types: [
+                { value: 'CONSTRUCTION', label: 'Construction' },
+                { value: 'RENOVATION', label: 'Renovation' },
+            ]
+        },
+        LIABILITY: {
+            label: 'Liability',
+            types: [
+                { value: 'ACCOUNTS_PAYABLE', label: 'Accounts payable' },
+                { value: 'SALES_TAX_PAYABLE', label: 'Sales Tax Payable' },
+            ]
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,16 +155,37 @@ function NewVoucherContent() {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Voucher Type</label>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Main Account</label>
+                        <select
+                            required
+                            value={formData.main_account}
+                            onChange={(e) => {
+                                const newAccount = e.target.value;
+                                setFormData({
+                                    ...formData,
+                                    main_account: newAccount,
+                                    voucher_type: ACCOUNT_CATEGORIES[newAccount].types[0]?.value || ''
+                                });
+                            }}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
+                        >
+                            {Object.entries(ACCOUNT_CATEGORIES).map(([key, cat]) => (
+                                <option key={key} value={key}>{cat.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Voucher Type / Sub Account</label>
                         <select
                             required
                             value={formData.voucher_type}
                             onChange={(e) => setFormData({ ...formData, voucher_type: e.target.value })}
                             className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
                         >
-                            <option value="CASH_PAYMENT">Cash Payment</option>
-                            <option value="CASH_RECEIPT">Cash Receipt</option>
-                            <option value="JOURNAL">Journal Voucher</option>
+                            {!formData.voucher_type && <option value="">Select a sub-account...</option>}
+                            {ACCOUNT_CATEGORIES[formData.main_account]?.types.map((type) => (
+                                <option key={type.value} value={type.value}>{type.label}</option>
+                            ))}
                         </select>
                     </div>
                     <div>
