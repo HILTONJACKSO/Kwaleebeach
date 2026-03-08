@@ -20,10 +20,20 @@ function NewVoucherContent() {
         voucher_number: `VCH-${Math.floor(Math.random() * 100000)}`,
         main_account: 'EXPENSE',
         voucher_type: '',
+        payment_mode: 'CASH',
         payee: '',
         description: '',
         total_amount: '',
     });
+
+    const PAYMENT_MODES = [
+        { value: 'CASH', label: 'Cash' },
+        { value: 'BANK', label: 'Bank Transfer' },
+        { value: 'MOMO_LONESTAR', label: 'Momo Lonestar' },
+        { value: 'MOMO_ORANGE', label: 'Momo Orange' },
+        { value: 'VISA', label: 'Visa' },
+        { value: 'OTHER', label: 'Other' },
+    ];
 
     const ACCOUNT_CATEGORIES: Record<string, { label: string, types: { value: string, label: string }[] }> = {
         OTHER_REVENUE: {
@@ -185,6 +195,19 @@ function NewVoucherContent() {
                             {!formData.voucher_type && <option value="">Select a sub-account...</option>}
                             {ACCOUNT_CATEGORIES[formData.main_account]?.types.map((type) => (
                                 <option key={type.value} value={type.value}>{type.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Payment Method</label>
+                        <select
+                            required
+                            value={formData.payment_mode}
+                            onChange={(e) => setFormData({ ...formData, payment_mode: e.target.value })}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
+                        >
+                            {PAYMENT_MODES.map((mode) => (
+                                <option key={mode.value} value={mode.value}>{mode.label}</option>
                             ))}
                         </select>
                     </div>

@@ -110,10 +110,20 @@ class Voucher(models.Model):
         ('JOURNAL', 'Journal Voucher'),
     ]
 
+    PAYMENT_MODE_CHOICES = [
+        ('CASH', 'Cash'),
+        ('BANK', 'Bank Transfer'),
+        ('MOMO_LONESTAR', 'Momo Lonestar'),
+        ('MOMO_ORANGE', 'Momo Orange'),
+        ('VISA', 'Visa'),
+        ('OTHER', 'Other'),
+    ]
+
     voucher_number = models.CharField(max_length=50, unique=True)
     date = models.DateField(auto_now_add=True)
     main_account = models.CharField(max_length=50, choices=MAIN_ACCOUNT_CHOICES, default='EXPENSE')
     voucher_type = models.CharField(max_length=50, choices=VOUCHER_TYPE_CHOICES)
+    payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, default='CASH')
     payee = models.CharField(max_length=255)
     description = models.TextField()
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -137,50 +147,58 @@ class Voucher(models.Model):
 
     def create_ledger_transaction(self):
         """
-        Creates a Transaction record based on voucher type.
+        Creates a Transaction record based on voucher type and accounting rules.
         """
         try:
-            cash_account = Account.objects.get(code='1000') # Default Cash
+            # Determine Payment Method Account (Cash or Bank)
+            pm_account = Account.objects.get(code='1000') # Default Cash
+            if self.payment_mode in ['BANK', 'BANK_TRANSFER', 'VISA']:
+                pm_account = Account.objects.get(code='1100')
             
-            # Mapping logic
             debit_acc = None
             credit_acc = None
             
             if self.main_account == 'OTHER_REVENUE':
-                # Debit Cash (+), Credit Revenue (+)
-                debit_acc = cash_account
-                credit_acc = Account.objects.get(code='4200') # Other Revenue
+                # Income Revenue: DEBIT Cash/Bank (+), CREDIT Revenue (+)
+                debit_acc = pm_account
+                credit_acc = Account.objects.get(code='4200') 
+            
             elif self.main_account == 'PURCHASES':
-                # Debit Purchase/Inventory (+), Credit Cash (-)
-                # Mapping specific purchases could be more granular
-                debit_acc = Account.objects.get(code='5100') # Supplies/Inventory Default
-                credit_acc = cash_account
+                # Purchases: DEBIT Inventory/Purchase (+), CREDIT Cash/Bank (-)
+                debit_acc = Account.objects.get(code='5100')
+                credit_acc = pm_account
+            
             elif self.main_account == 'EXPENSE':
-                # Debit Expense (+), Credit Cash (-)
-                debit_acc = Account.objects.get(code='5900') # Misc Expense Default
-                # Try to find a more specific expense account if possible
+                # Expenses: DEBIT Expense (+), CREDIT Cash/Bank (-)
+                debit_acc = Account.objects.get(code='5900') # Default Misc
                 if 'UTILITIES' in self.voucher_type: debit_acc = Account.objects.get(code='5200')
                 elif 'MARKETING' in self.voucher_type: debit_acc = Account.objects.get(code='5300')
-                credit_acc = cash_account
+                elif 'WAGES' in self.voucher_type: debit_acc = Account.objects.get(code='5000')
+                credit_acc = pm_account
+            
             elif self.main_account == 'ASSETS':
-                # Debit Asset (+), Credit Cash (-)
-                debit_acc = Account.objects.get(code='1000') # Should be an asset account
-                credit_acc = cash_account
+                # Assets: DEBIT Asset Account (+), CREDIT Cash/Bank (-)
+                try:
+                    debit_acc = Account.objects.get(code='1500')
+                except Account.DoesNotExist:
+                    debit_acc = Account.objects.get(code='1000') # Fallback
+                credit_acc = pm_account
+            
             elif self.main_account == 'LIABILITY':
-                # Debit Cash (+), Credit Liability (+)
-                debit_acc = cash_account
-                credit_acc = Account.objects.get(code='2000')
+                # Liability Payment: DEBIT Liability Account (-), CREDIT Cash/Bank (-)
+                debit_acc = Account.objects.get(code='2000')
+                credit_acc = pm_account
 
             if debit_acc and credit_acc:
                 Transaction.objects.create(
-                    description=f"Voucher {self.voucher_number} - {self.payee}",
+                    description=f"Voucher {self.voucher_number} - {self.payee} ({self.get_payment_mode_display()})",
                     debit_account=debit_acc,
                     credit_account=credit_acc,
                     amount=self.total_amount
                 )
-        except Account.DoesNotExist:
+        except Account.DoesNotExist as e:
             import logging
-            logging.error(f"Failed to create transaction for Voucher {self.voucher_number}: Default accounts missing.")
+            logging.error(f"Missing account during Voucher {self.voucher_number} sync: {e}")
 
 class Invoice(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')

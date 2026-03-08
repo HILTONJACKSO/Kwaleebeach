@@ -10,6 +10,7 @@ class Command(BaseCommand):
             {'code': '1000', 'name': 'Cash on Hand', 'account_type': 'ASSET'},
             {'code': '1100', 'name': 'Bank Account', 'account_type': 'ASSET'},
             {'code': '1200', 'name': 'Accounts Receivable', 'account_type': 'ASSET'},
+            {'code': '1500', 'name': 'Fixed Assets', 'account_type': 'ASSET'},
             
             # Liabilities
             {'code': '2000', 'name': 'Accounts Payable', 'account_type': 'LIABILITY'},
