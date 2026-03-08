@@ -147,7 +147,7 @@ function FinanceDashboardContent() {
         },
         {
             name: 'Total Revenue',
-            value: '$' + (Array.isArray(accounts) ? accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) : 0).toFixed(2),
+            value: '$' + (Array.isArray(accounts) ? accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + (parseFloat(a.balance || 0) * -1), 0) : 0).toFixed(2),
             icon: <TrendingUp className="text-emerald-600" />,
             trend: '+8.2%',
             color: 'bg-emerald-50'
@@ -163,9 +163,9 @@ function FinanceDashboardContent() {
             name: 'Net Position',
             value: '$' + (Array.isArray(accounts) ? (
                 accounts.filter(a => a.account_type === 'ASSET').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) +
-                accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) -
+                accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + (parseFloat(a.balance || 0) * -1), 0) -
                 accounts.filter(a => a.account_type === 'EXPENSE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) -
-                accounts.filter(a => a.account_type === 'LIABILITY').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0)
+                accounts.filter(a => a.account_type === 'LIABILITY').reduce((sum, a) => sum + (parseFloat(a.balance || 0) * -1), 0)
             ) : 0).toFixed(2),
             icon: <Activity className="text-purple-600" />,
             trend: 'Stable',
@@ -325,7 +325,9 @@ function FinanceDashboardContent() {
                                         </div>
                                     </div>
                                     <div className="text-sm font-black text-gray-900">
-                                        ${parseFloat(acc.balance).toFixed(2)}
+                                        ${(['REVENUE', 'LIABILITY', 'EQUITY'].includes(acc.account_type)
+                                            ? (parseFloat(acc.balance) * -1)
+                                            : parseFloat(acc.balance)).toFixed(2)}
                                     </div>
                                 </div>
                             ))}

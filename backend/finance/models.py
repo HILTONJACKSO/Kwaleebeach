@@ -27,20 +27,11 @@ class Transaction(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            # Type-Aware balance logic
-            
-            # 1. Update Debit Account
-            if self.debit_account.account_type in ['ASSET', 'EXPENSE']:
-                self.debit_account.balance += self.amount
-            else: # REVENUE, LIABILITY, EQUITY
-                self.debit_account.balance -= self.amount
+            # Literal user rule: Debit adds (+), Credit deducts (-)
+            self.debit_account.balance += self.amount
             self.debit_account.save()
             
-            # 2. Update Credit Account
-            if self.credit_account.account_type in ['REVENUE', 'LIABILITY', 'EQUITY']:
-                self.credit_account.balance += self.amount
-            else: # ASSET, EXPENSE
-                self.credit_account.balance -= self.amount
+            self.credit_account.balance -= self.amount
             self.credit_account.save()
             
         super().save(*args, **kwargs)
