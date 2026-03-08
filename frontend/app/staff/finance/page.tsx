@@ -147,7 +147,7 @@ function FinanceDashboardContent() {
         },
         {
             name: 'Total Revenue',
-            value: '$' + (Array.isArray(accounts) ? accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + Math.abs(parseFloat(a.balance || 0)), 0) : 0).toFixed(2),
+            value: '$' + (Array.isArray(accounts) ? accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) : 0).toFixed(2),
             icon: <TrendingUp className="text-emerald-600" />,
             trend: '+8.2%',
             color: 'bg-emerald-50'
@@ -161,7 +161,12 @@ function FinanceDashboardContent() {
         },
         {
             name: 'Net Position',
-            value: '$' + (Array.isArray(accounts) ? (accounts.filter(a => a.account_type === 'ASSET').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) - accounts.filter(a => a.account_type === 'LIABILITY').reduce((sum, a) => sum + Math.abs(parseFloat(a.balance || 0)), 0)) : 0).toFixed(2),
+            value: '$' + (Array.isArray(accounts) ? (
+                accounts.filter(a => a.account_type === 'ASSET').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) +
+                accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) -
+                accounts.filter(a => a.account_type === 'EXPENSE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) -
+                accounts.filter(a => a.account_type === 'LIABILITY').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0)
+            ) : 0).toFixed(2),
             icon: <Activity className="text-purple-600" />,
             trend: 'Stable',
             color: 'bg-purple-50'
@@ -218,7 +223,7 @@ function FinanceDashboardContent() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Debit Account (+)</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Increase Account (+)</label>
                                     <select
                                         required
                                         value={entryForm.debit_account}
@@ -232,7 +237,7 @@ function FinanceDashboardContent() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Credit Account (-)</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Decrease Account (-)</label>
                                     <select
                                         required
                                         value={entryForm.credit_account}
@@ -320,7 +325,7 @@ function FinanceDashboardContent() {
                                         </div>
                                     </div>
                                     <div className="text-sm font-black text-gray-900">
-                                        ${Math.abs(parseFloat(acc.balance)).toFixed(2)}
+                                        ${parseFloat(acc.balance).toFixed(2)}
                                     </div>
                                 </div>
                             ))}

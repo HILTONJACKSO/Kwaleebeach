@@ -26,13 +26,23 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
 
     def save(self, *args, **kwargs):
-        # Basic double-entry logic: update account balances
-        # In a real system, we'd use signals or a more robust ledger approach
         if not self.pk:
-            self.debit_account.balance += self.amount
+            # Type-Aware balance logic
+            
+            # 1. Update Debit Account
+            if self.debit_account.account_type in ['ASSET', 'EXPENSE']:
+                self.debit_account.balance += self.amount
+            else: # REVENUE, LIABILITY, EQUITY
+                self.debit_account.balance -= self.amount
             self.debit_account.save()
-            self.credit_account.balance -= self.amount
+            
+            # 2. Update Credit Account
+            if self.credit_account.account_type in ['REVENUE', 'LIABILITY', 'EQUITY']:
+                self.credit_account.balance += self.amount
+            else: # ASSET, EXPENSE
+                self.credit_account.balance -= self.amount
             self.credit_account.save()
+            
         super().save(*args, **kwargs)
 
     def __str__(self):
