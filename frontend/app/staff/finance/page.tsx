@@ -9,7 +9,8 @@ import {
     Filter,
     ArrowRightLeft,
     FileText,
-    Activity
+    Activity,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -26,6 +27,14 @@ function FinanceDashboardContent() {
     const [accounts, setAccounts] = useState<any[]>([]);
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isAddingEntry, setIsAddingEntry] = useState(false);
+    const [entryLoading, setEntryLoading] = useState(false);
+    const [entryForm, setEntryForm] = useState({
+        description: '',
+        debit_account: '',
+        credit_account: '',
+        amount: ''
+    });
 
     const fetchData = async () => {
         try {
@@ -50,6 +59,45 @@ function FinanceDashboardContent() {
             console.error("Error fetching financial data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAddEntry = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!entryForm.debit_account || !entryForm.credit_account || !entryForm.amount) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        if (entryForm.debit_account === entryForm.credit_account) {
+            alert("Debit and Credit accounts must be different.");
+            return;
+        }
+
+        setEntryLoading(true);
+        try {
+            const res = await fetch('/api/finance/transactions/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                },
+                body: JSON.stringify(entryForm),
+            });
+
+            if (res.ok) {
+                setIsAddingEntry(false);
+                setEntryForm({ description: '', debit_account: '', credit_account: '', amount: '' });
+                fetchData();
+            } else {
+                const data = await res.json();
+                console.error("Failed to create entry:", data);
+                alert("Error: " + (data.detail || "Failed to save transaction."));
+            }
+        } catch (error) {
+            console.error("Network error:", error);
+        } finally {
+            setEntryLoading(false);
         }
     };
 
@@ -104,14 +152,102 @@ function FinanceDashboardContent() {
                     <Link href="/staff/payroll/new" className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
                         <Plus size={18} /> New Voucher
                     </Link>
-                    <button className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
+                    <Link href="/staff/reports" className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl border-2 border-gray-100 text-xs font-black uppercase tracking-widest text-gray-700 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
                         <FileText size={18} /> Generate Reports
-                    </button>
-                    <button className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-xs font-black uppercase tracking-widest">
+                    </Link>
+                    <button
+                        onClick={() => setIsAddingEntry(true)}
+                        className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-2xl shadow-lg shadow-gray-200 hover:bg-[var(--color-primary)] transition-all text-xs font-black uppercase tracking-widest"
+                    >
                         <Plus size={18} /> New Entry
                     </button>
                 </div>
             </div>
+
+            {/* New Entry Modal */}
+            {isAddingEntry && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                            <h2 className="text-xl font-black text-gray-900 tracking-tight">Manual Ledger Entry</h2>
+                            <button onClick={() => setIsAddingEntry(false)} className="p-2 text-gray-400 hover:text-gray-900 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleAddEntry} className="p-8 space-y-6">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Description</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={entryForm.description}
+                                    onChange={(e) => setEntryForm({ ...entryForm, description: e.target.value })}
+                                    className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
+                                    placeholder="e.g. Account adjustment, Petty cash replenishment"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Debit Account (+)</label>
+                                    <select
+                                        required
+                                        value={entryForm.debit_account}
+                                        onChange={(e) => setEntryForm({ ...entryForm, debit_account: e.target.value })}
+                                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
+                                    >
+                                        <option value="">Select Account</option>
+                                        {accounts.map(acc => (
+                                            <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Credit Account (-)</label>
+                                    <select
+                                        required
+                                        value={entryForm.credit_account}
+                                        onChange={(e) => setEntryForm({ ...entryForm, credit_account: e.target.value })}
+                                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
+                                    >
+                                        <option value="">Select Account</option>
+                                        {accounts.map(acc => (
+                                            <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Amount ($)</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                    value={entryForm.amount}
+                                    onChange={(e) => setEntryForm({ ...entryForm, amount: e.target.value })}
+                                    className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-3 pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={entryLoading}
+                                    className="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[var(--color-primary)] shadow-lg shadow-gray-200 transition-all disabled:opacity-50"
+                                >
+                                    {entryLoading ? 'Saving Entry...' : 'Create Entry'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddingEntry(false)}
+                                    className="w-full py-4 bg-white text-gray-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
