@@ -151,10 +151,17 @@ class Voucher(models.Model):
         Creates a Transaction record based on voucher type and accounting rules.
         """
         try:
-            # Determine Payment Method Account (Cash or Bank)
-            pm_account = Account.objects.get(code='1000') # Default Cash
-            if self.payment_mode in ['BANK', 'BANK_TRANSFER', 'VISA']:
-                pm_account = Account.objects.get(code='1100')
+            # Payment Mode to Account Code Mapping
+            pm_account_mapping = {
+                'CASH': '1000',
+                'BANK': '1100',
+                'MOMO_LONESTAR': '1110',
+                'MOMO_ORANGE': '1120',
+                'VISA': '1130',
+                'OTHER': '1140'
+            }
+            pm_code = pm_account_mapping.get(self.payment_mode, '1000') # Fallback to cash
+            pm_account = Account.objects.get(code=pm_code)
             
             debit_acc = None
             credit_acc = None

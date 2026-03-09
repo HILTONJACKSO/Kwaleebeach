@@ -9,6 +9,10 @@ class Command(BaseCommand):
             # Assets
             {'code': '1000', 'name': 'Cash on Hand', 'account_type': 'ASSET'},
             {'code': '1100', 'name': 'Bank Account', 'account_type': 'ASSET'},
+            {'code': '1110', 'name': 'Momo Lonestar', 'account_type': 'ASSET'},
+            {'code': '1120', 'name': 'Momo Orange', 'account_type': 'ASSET'},
+            {'code': '1130', 'name': 'Visa Account', 'account_type': 'ASSET'},
+            {'code': '1140', 'name': 'Other Payment Methods', 'account_type': 'ASSET'},
             {'code': '1200', 'name': 'Accounts Receivable', 'account_type': 'ASSET'},
             {'code': '1500', 'name': 'Fixed Assets', 'account_type': 'ASSET'},
             
