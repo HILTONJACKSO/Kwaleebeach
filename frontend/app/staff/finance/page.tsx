@@ -355,7 +355,10 @@ function FinanceDashboardContent() {
                                 <div key={acc.id} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 group">
                                     <div className="flex items-center gap-4">
                                         <div className="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-blue-600 transition-colors shadow-sm">
-                                            {getAccountIcon(acc.account_type)}
+                                            {acc.account_type === 'ASSET' ? <Landmark size={20} /> :
+                                                acc.account_type === 'REVENUE' ? <TrendingUp size={20} /> :
+                                                    acc.account_type === 'EXPENSE' ? <TrendingDown size={20} /> :
+                                                        <Activity size={20} />}
                                         </div>
                                         <div>
                                             <div className="text-sm font-bold text-gray-900">{acc.name} <span className="text-xs text-gray-400 ml-1 font-medium">#{acc.code}</span></div>
