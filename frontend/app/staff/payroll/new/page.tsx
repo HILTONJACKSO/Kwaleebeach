@@ -124,7 +124,7 @@ function NewVoucherContent() {
             });
 
             if (res.ok) {
-                router.push('/staff/payroll');
+                router.push('/staff/finance');
             } else {
                 const data = await res.json();
                 console.error("Error creating voucher:", data);
@@ -141,7 +141,7 @@ function NewVoucherContent() {
     return (
         <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-4">
-                <Link href="/staff/payroll" className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors text-gray-500">
+                <Link href="/staff/finance" className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors text-gray-500">
                     <ArrowLeft size={20} />
                 </Link>
                 <div>

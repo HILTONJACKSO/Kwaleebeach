@@ -27,11 +27,20 @@ class Transaction(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            # Literal user rule: Debit adds (+), Credit deducts (-)
-            self.debit_account.balance += self.amount
+            # Standard Type-Aware Normal Balance logic
+            
+            # Asset / Expense normal balance is Debit (+)
+            if self.debit_account.account_type in ['ASSET', 'EXPENSE']:
+                self.debit_account.balance += self.amount
+            else: # Rev/Liab/Eq normal balance is Credit (+), so a Debit DECREASES it
+                self.debit_account.balance -= self.amount
             self.debit_account.save()
             
-            self.credit_account.balance -= self.amount
+            # Asset / Expense Credit DECREASES (-)
+            if self.credit_account.account_type in ['ASSET', 'EXPENSE']:
+                self.credit_account.balance -= self.amount
+            else: # Rev/Liab/Eq Credit INCREASES (+)
+                self.credit_account.balance += self.amount
             self.credit_account.save()
             
         super().save(*args, **kwargs)

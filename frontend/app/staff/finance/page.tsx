@@ -34,8 +34,8 @@ function FinanceDashboardContent() {
     const [entryLoading, setEntryLoading] = useState(false);
     const [entryForm, setEntryForm] = useState({
         description: '',
-        debit_account: '',
-        credit_account: '',
+        increase_account: '',
+        decrease_account: '',
         amount: ''
     });
 
@@ -94,38 +94,74 @@ function FinanceDashboardContent() {
 
     const handleAddEntry = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!entryForm.debit_account || !entryForm.credit_account || !entryForm.amount) {
+        if (!entryForm.increase_account || !entryForm.decrease_account || !entryForm.amount) {
             alert("Please fill in all required fields.");
             return;
         }
 
-        if (entryForm.debit_account === entryForm.credit_account) {
-            alert("Debit and Credit accounts must be different.");
+        if (entryForm.increase_account === entryForm.decrease_account) {
+            alert("Increase and Decrease accounts must be different.");
             return;
         }
 
         setEntryLoading(true);
         try {
-            const res = await fetch('/api/finance/transactions/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
-                },
-                body: JSON.stringify(entryForm),
-            });
+            const incAcc = accounts.find((a: any) => a.id.toString() === entryForm.increase_account);
+            const decAcc = accounts.find((a: any) => a.id.toString() === entryForm.decrease_account);
+            const sysClear = accounts.find((a: any) => a.code === '9999');
 
-            if (res.ok) {
-                setIsAddingEntry(false);
-                setEntryForm({ description: '', debit_account: '', credit_account: '', amount: '' });
-                fetchData();
+            let finalDebit = null;
+            let finalCredit = null;
+
+            // Determine standard debit/credit needs
+            if (['ASSET', 'EXPENSE'].includes(incAcc.account_type)) finalDebit = incAcc.id;
+            else finalCredit = incAcc.id;
+
+            let payloads = [];
+
+            if (['ASSET', 'EXPENSE'].includes(decAcc.account_type)) {
+                if (finalCredit) {
+                    // Both require Credit. Route through System Clearing.
+                    if (!sysClear) throw new Error("System Clearing account not found.");
+                    payloads.push({ description: entryForm.description, debit_account: sysClear.id, credit_account: incAcc.id, amount: entryForm.amount });
+                    payloads.push({ description: entryForm.description, debit_account: sysClear.id, credit_account: decAcc.id, amount: entryForm.amount });
+                } else {
+                    finalCredit = decAcc.id;
+                    payloads.push({ description: entryForm.description, debit_account: finalDebit, credit_account: finalCredit, amount: entryForm.amount });
+                }
             } else {
-                const data = await res.json();
-                console.error("Failed to create entry:", data);
-                alert("Error: " + (data.detail || "Failed to save transaction."));
+                if (finalDebit) {
+                    // Both require Debit. Route through System Clearing.
+                    if (!sysClear) throw new Error("System Clearing account not found.");
+                    payloads.push({ description: entryForm.description, debit_account: incAcc.id, credit_account: sysClear.id, amount: entryForm.amount });
+                    payloads.push({ description: entryForm.description, debit_account: decAcc.id, credit_account: sysClear.id, amount: entryForm.amount });
+                } else {
+                    finalDebit = decAcc.id;
+                    payloads.push({ description: entryForm.description, debit_account: finalDebit, credit_account: finalCredit, amount: entryForm.amount });
+                }
             }
-        } catch (error) {
-            console.error("Network error:", error);
+
+            for (const payload of payloads) {
+                const res = await fetch('/api/finance/transactions/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('yarvo_token')}`
+                    },
+                    body: JSON.stringify(payload),
+                });
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.detail || "Failed to save transaction.");
+                }
+            }
+
+            setIsAddingEntry(false);
+            setEntryForm({ description: '', increase_account: '', decrease_account: '', amount: '' });
+            fetchData();
+        } catch (error: any) {
+            console.error("Error creating entry:", error);
+            alert(error.message || "Network error. Please try again.");
         } finally {
             setEntryLoading(false);
         }
@@ -137,36 +173,38 @@ function FinanceDashboardContent() {
         return () => clearInterval(interval);
     }, []);
 
+    const displayAccounts = Array.isArray(accounts) ? accounts.filter((a: any) => a.code !== '9999') : [];
+
     const stats = [
         {
             name: 'Total Assets',
-            value: '$' + (Array.isArray(accounts) ? accounts.filter(a => a.account_type === 'ASSET').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) : 0).toFixed(2),
+            value: '$' + (displayAccounts.filter(a => a.account_type === 'ASSET').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0)).toFixed(2),
             icon: <Landmark className="text-blue-600" />,
             trend: '+12.5%',
             color: 'bg-blue-50'
         },
         {
             name: 'Total Revenue',
-            value: '$' + (Array.isArray(accounts) ? accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + (parseFloat(a.balance || 0) * -1), 0) : 0).toFixed(2),
+            value: '$' + (displayAccounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0)).toFixed(2),
             icon: <TrendingUp className="text-emerald-600" />,
             trend: '+8.2%',
             color: 'bg-emerald-50'
         },
         {
             name: 'Total Expenses',
-            value: '$' + (Array.isArray(accounts) ? accounts.filter(a => a.account_type === 'EXPENSE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) : 0).toFixed(2),
+            value: '$' + (displayAccounts.filter(a => a.account_type === 'EXPENSE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0)).toFixed(2),
             icon: <TrendingDown className="text-red-600" />,
             trend: '+2.4%',
             color: 'bg-red-50'
         },
         {
             name: 'Net Position',
-            value: '$' + (Array.isArray(accounts) ? (
-                accounts.filter(a => a.account_type === 'ASSET').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) +
-                accounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + (parseFloat(a.balance || 0) * -1), 0) -
-                accounts.filter(a => a.account_type === 'EXPENSE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) -
-                accounts.filter(a => a.account_type === 'LIABILITY').reduce((sum, a) => sum + (parseFloat(a.balance || 0) * -1), 0)
-            ) : 0).toFixed(2),
+            value: '$' + (
+                displayAccounts.filter(a => a.account_type === 'ASSET').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) +
+                displayAccounts.filter(a => a.account_type === 'REVENUE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) -
+                displayAccounts.filter(a => a.account_type === 'EXPENSE').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0) -
+                displayAccounts.filter(a => a.account_type === 'LIABILITY').reduce((sum, a) => sum + parseFloat(a.balance || 0), 0)
+            ).toFixed(2),
             icon: <Activity className="text-purple-600" />,
             trend: 'Stable',
             color: 'bg-purple-50'
@@ -226,12 +264,12 @@ function FinanceDashboardContent() {
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Increase Account (+)</label>
                                     <select
                                         required
-                                        value={entryForm.debit_account}
-                                        onChange={(e) => setEntryForm({ ...entryForm, debit_account: e.target.value })}
+                                        value={entryForm.increase_account}
+                                        onChange={(e) => setEntryForm({ ...entryForm, increase_account: e.target.value })}
                                         className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
                                     >
                                         <option value="">Select Account</option>
-                                        {accounts.map(acc => (
+                                        {displayAccounts.map(acc => (
                                             <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
                                         ))}
                                     </select>
@@ -240,12 +278,12 @@ function FinanceDashboardContent() {
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Decrease Account (-)</label>
                                     <select
                                         required
-                                        value={entryForm.credit_account}
-                                        onChange={(e) => setEntryForm({ ...entryForm, credit_account: e.target.value })}
+                                        value={entryForm.decrease_account}
+                                        onChange={(e) => setEntryForm({ ...entryForm, decrease_account: e.target.value })}
                                         className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all"
                                     >
                                         <option value="">Select Account</option>
-                                        {accounts.map(acc => (
+                                        {displayAccounts.map(acc => (
                                             <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
                                         ))}
                                     </select>
@@ -313,21 +351,19 @@ function FinanceDashboardContent() {
                     </div>
                     <div className="flex-1 overflow-y-auto max-h-[600px] p-2">
                         <div className="space-y-1">
-                            {Array.isArray(accounts) && accounts.map((acc) => (
-                                <div key={acc.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-colors group">
+                            {displayAccounts.map((acc: any) => (
+                                <div key={acc.id} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100 group">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center font-black text-xs">
-                                            {acc.code}
+                                        <div className="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-blue-600 transition-colors shadow-sm">
+                                            {getAccountIcon(acc.account_type)}
                                         </div>
                                         <div>
-                                            <div className="text-sm font-bold text-gray-900">{acc.name}</div>
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{acc.account_type}</div>
+                                            <div className="text-sm font-bold text-gray-900">{acc.name} <span className="text-xs text-gray-400 ml-1 font-medium">#{acc.code}</span></div>
+                                            <div className="text-[10px] uppercase font-black tracking-widest text-gray-400 mt-1">{acc.account_type}</div>
                                         </div>
                                     </div>
                                     <div className="text-sm font-black text-gray-900">
-                                        ${(['REVENUE', 'LIABILITY', 'EQUITY'].includes(acc.account_type)
-                                            ? (parseFloat(acc.balance) * -1)
-                                            : parseFloat(acc.balance)).toFixed(2)}
+                                        ${parseFloat(acc.balance).toFixed(2)}
                                     </div>
                                 </div>
                             ))}
